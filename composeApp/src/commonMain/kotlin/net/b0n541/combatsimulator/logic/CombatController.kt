@@ -16,6 +16,10 @@ class CombatController {
         combatState.update { it.copy(combatants = it.combatants + combatant) }
     }
 
+    fun resetCombatants() {
+        combatState.update { it.copy(combatants = emptyList()) }
+    }
+
     fun startCombat() {
         combatState.update { state ->
             val startedCombatants = state.combatants

@@ -55,7 +55,8 @@ private sealed class SelectedAction {
 fun CombatGridView(
     controller: CombatController,
     width: Int,
-    height: Int
+    height: Int,
+    onRestart: () -> Unit
 ) {
     val combatState by controller.combatState.collectAsState()
     val currentCombatant = combatState.combatants.firstOrNull { it.name == combatState.currentTurnId }
@@ -97,7 +98,7 @@ fun CombatGridView(
 
             if (!isCombatOngoing) {
                 Spacer(Modifier.weight(1f))
-                Button(onClick = { controller.startCombat() }) {
+                Button(onClick = onRestart) {
                     Text("Start Again")
                 }
             }
