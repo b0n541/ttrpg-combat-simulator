@@ -119,7 +119,8 @@ fun CombatGridView(
                         if (currentCombatant?.position == startPos) {
                             draggedCombatant = currentCombatant
                             dragPosition = startOffset
-                            currentDraggedCombatantAvailableMoves = controller.getAvailableMovePositions(currentCombatant, width, height)
+                            currentDraggedCombatantAvailableMoves =
+                                controller.getAvailableMovePositions(currentCombatant, width, height)
                         }
                     },
                     onDrag = { change, dragAmount ->
@@ -357,7 +358,6 @@ private fun DraggedCombatant(
                             y = (position.y - cellSize.toPx() / 2).toDp()
                         )
                         .size(cellSize)
-                        .alpha(0.7f) // Make the dragged item semi-transparent
                 ) {
                     Image(painterResource(combatant.imageResource), combatant.name)
                 }
