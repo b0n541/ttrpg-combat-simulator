@@ -128,4 +128,15 @@ class CombatController {
         }
         return positions
     }
+
+    fun isMoveValid(combatant: Combatant, position: Position): Boolean {
+        val distance = manhattanDistance(combatant.position, position)
+        val occupied = combatState.value.combatants.any { it.position == position && it.isAlive }
+        return distance in 1..combatant.moveRange && !occupied
+    }
+
+    fun isAttackValid(attacker: Combatant, target: Combatant): Boolean {
+        val distance = manhattanDistance(attacker.position, target.position)
+        return distance <= attacker.moveRange // Simple range check for now
+    }
 }

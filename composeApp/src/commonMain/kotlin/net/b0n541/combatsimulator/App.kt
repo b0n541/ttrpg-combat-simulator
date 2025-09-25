@@ -17,6 +17,9 @@ import net.b0n541.combatsimulator.ui.CombatGridView
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ttrpg_combat_simulator.composeapp.generated.resources.*
 
+private const val GRID_WIDTH = 10
+private const val GRID_HEIGHT = 10
+
 
 @Composable
 @Preview
@@ -30,7 +33,7 @@ fun App() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             val controller = remember { CombatController() }
-            val startNewGame = { startNewGame(controller) }
+            val startNewGame = { startNewGame(controller, GRID_WIDTH, GRID_HEIGHT) }
 
             // Initialize combatants
             LaunchedEffect(Unit) {
@@ -38,9 +41,9 @@ fun App() {
             }
 
             CombatGridView(
-                controller,
-                width = 10,
-                height = 10,
+                controller = controller,
+                width = GRID_WIDTH,
+                height = GRID_HEIGHT,
                 onRestart = startNewGame
             )
 
@@ -49,9 +52,7 @@ fun App() {
     }
 }
 
-private fun startNewGame(controller: CombatController) {
-    val gridWidth = 10
-    val gridHeight = 10
+private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeight: Int) {
     val usedPositions = mutableSetOf<Position>()
 
     controller.resetCombatants()

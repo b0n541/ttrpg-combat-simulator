@@ -3,23 +3,25 @@ package net.b0n541.combatsimulator.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import net.b0n541.combatsimulator.logic.Action
-import net.b0n541.combatsimulator.logic.CombatController
-import net.b0n541.combatsimulator.logic.CombatOutcome
-import net.b0n541.combatsimulator.logic.Position
+import net.b0n541.combatsimulator.logic.*
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -45,11 +47,6 @@ private val floorTiles = listOf(
     Res.drawable.dungeon_floor_16
 )
 
-private sealed class SelectedAction {
-    object Move : SelectedAction()
-    object Attack : SelectedAction()
-}
-
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun CombatGridView(
@@ -62,7 +59,14 @@ fun CombatGridView(
     val currentCombatant = combatState.combatants.firstOrNull { it.name == combatState.currentTurnId }
     val scope = rememberCoroutineScope()
 
-    var selectedAction by remember { mutableStateOf<SelectedAction?>(null) }
+    var draggedCombatant by remember { mutableStateOf<Combatant?>(null) }
+    var dragPosition by remember { mutableStateOf<Offset?>(null) }
+    var dropTarget by remember { mutableStateOf<Position?>(null) }
+    val cellSize = 100.dp
+
+    val combatantsByPosition = remember(combatState.combatants) {
+        combatState.combatants.associateBy { it.position }
+    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
@@ -82,16 +86,12 @@ fun CombatGridView(
             modifier = Modifier.width((width * 100).dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(onClick = { selectedAction = SelectedAction.Move }, enabled = isCombatOngoing) { Text("Move") }
-            Spacer(Modifier.width(8.dp))
-            Button(onClick = { selectedAction = SelectedAction.Attack }, enabled = isCombatOngoing) { Text("Attack") }
-            Spacer(Modifier.width(8.dp))
             Button(
                 onClick = {
                     scope.launch {
+                        draggedCombatant = null
                         controller.performAction(Action.Dodge)
                     }
-                    selectedAction = null
                 },
                 enabled = isCombatOngoing
             ) { Text("Dodge") }
@@ -106,43 +106,93 @@ fun CombatGridView(
 
         Spacer(Modifier.height(16.dp))
 
-        // Calculate available moves for highlighting
-        val availableMoves = remember(selectedAction, combatState) {
-            if (selectedAction == SelectedAction.Move && currentCombatant != null) {
-                controller.getAvailableMovePositions(currentCombatant, width, height)
-            } else emptyList()
-        }
-
         // Grid
-        Column {
-            for (y in 0 until height) {
-                GridRow(
-                    y,
-                    width,
-                    combatState,
-                    currentCombatant,
-                    selectedAction,
-                    availableMoves,
-                    scope,
-                    controller,
-                    onAction = { selectedAction = null }
+        Box(
+            Modifier.pointerInput(currentCombatant, combatantsByPosition) {
+                detectDragGestures(
+                    onDragStart = { startOffset ->
+                        val x = (startOffset.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
+                        val y = (startOffset.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
+                        val startPos = Position(x, y)
+
+                        if (currentCombatant?.position == startPos) {
+                            draggedCombatant = currentCombatant
+                            dragPosition = startOffset
+                        }
+                    },
+                    onDrag = { change, dragAmount ->
+                        draggedCombatant ?: return@detectDragGestures
+                        dragPosition = (dragPosition ?: Offset.Zero) + dragAmount
+                        val x = (dragPosition!!.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
+                        val y = (dragPosition!!.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
+                        dropTarget = Position(x, y)
+                        change.consume()
+                    },
+                    onDragEnd = {
+                        draggedCombatant?.let { attacker ->
+                            dropTarget?.let { targetPos ->
+                                val targetCombatant = combatantsByPosition[targetPos]
+                                if (targetCombatant != null && targetCombatant.isAlive && targetCombatant != attacker && controller.isAttackValid(
+                                        attacker,
+                                        targetCombatant
+                                    )
+                                ) {
+                                    // Attack logic
+                                    scope.launch {
+                                        controller.performAction(Action.Attack(targetCombatant))
+                                    }
+                                } else if (controller.isMoveValid(attacker, targetPos)) {
+                                    // Move logic
+                                    scope.launch { controller.performAction(Action.Move(targetPos)) }
+                                }
+                            }
+                        }
+                        draggedCombatant = null
+                        dragPosition = null
+                        dropTarget = null
+                    },
+                    onDragCancel = {
+                        draggedCombatant = null
+                        dragPosition = null
+                        dropTarget = null
+                    },
                 )
             }
+        ) {
+            Column {
+                for (y in 0 until height) {
+                    GridRow(
+                        y,
+                        width,
+                        combatantsByPosition,
+                        currentCombatant,
+                        scope,
+                        controller,
+                        draggedCombatant,
+                        dropTarget
+                    )
+                }
+            }
+
+            DraggedCombatant(
+                draggedCombatant = draggedCombatant,
+                dragPosition = dragPosition,
+                cellSize = cellSize
+            )
         }
 
-        if (!isCombatOngoing) {
-            Box(
-                modifier = Modifier
-                    .size((width * 100).dp, (height * 100).dp)
-                    .background(Color.Black.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = statusText,
-                    color = Color.White,
-                    fontSize = 50.sp
-                )
-            }
+
+        Box(
+            modifier = Modifier
+                .size((width * 100).dp, (height * 100).dp)
+                .background(Color.Black.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = statusText,
+                color = Color.White,
+                fontSize = 50.sp
+            )
         }
     }
 }
@@ -152,23 +202,28 @@ fun CombatGridView(
 private fun GridRow(
     y: Int,
     width: Int,
-    combatState: net.b0n541.combatsimulator.logic.CombatState,
-    currentCombatant: net.b0n541.combatsimulator.logic.Combatant?,
-    selectedAction: SelectedAction?,
-    availableMoves: List<Position>,
+    combatantsByPosition: Map<Position, Combatant>,
+    currentCombatant: Combatant?,
     scope: kotlinx.coroutines.CoroutineScope,
     controller: CombatController,
-    onAction: () -> Unit
+    draggedCombatant: Combatant?,
+    dropTarget: Position?
 ) {
     Row {
         for (x in 0 until width) {
             val pos = Position(x, y)
-            val cellCombatant = combatState.combatants.firstOrNull { it.position == pos }
+            val cellCombatant = combatantsByPosition[pos]
             val isCurrentCombatant = currentCombatant != null && cellCombatant == currentCombatant
-            val isAttacked = cellCombatant?.name == combatState.lastAttackedTargetId
+
+            val isBeingDragged = draggedCombatant == cellCombatant
+            val isDropTarget = dropTarget == pos
+            val isValidMoveTarget = draggedCombatant != null && controller.isMoveValid(draggedCombatant, pos)
+            val isValidAttackTarget = draggedCombatant != null && cellCombatant != null &&
+                    cellCombatant.isAlive && cellCombatant != draggedCombatant &&
+                    controller.isAttackValid(draggedCombatant, cellCombatant)
+
 
             val overlayColor = when {
-                isAttacked -> Color.Red
                 isCurrentCombatant -> Color.Yellow
                 else -> Color.Transparent
             }
@@ -182,24 +237,7 @@ private fun GridRow(
                     .border(
                         width = borderWidth,
                         color = borderColor
-                    )
-                    .clickable(enabled = currentCombatant != null) {
-                        if (selectedAction == SelectedAction.Move && pos in availableMoves) {
-                            scope.launch {
-                                controller.performAction(Action.Move(pos))
-                            }
-                            onAction()
-                        } else if (selectedAction == SelectedAction.Attack &&
-                            cellCombatant != null &&
-                            cellCombatant != currentCombatant &&
-                            cellCombatant.isAlive
-                        ) {
-                            scope.launch {
-                                controller.performAction(Action.Attack(cellCombatant))
-                            }
-                            onAction()
-                        }
-                    },
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 // Draw floor tile
@@ -209,23 +247,43 @@ private fun GridRow(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // Draw highlight overlay for available moves
-                if (pos in availableMoves) {
+                // Highlight for valid move targets during drag
+                if (isValidMoveTarget) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(Color.Blue.copy(alpha = 0.3f))
+                    )
+                }
+
+                // Highlight for valid attack targets during drag
+                if (isValidAttackTarget) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(Color.Red.copy(alpha = 0.3f))
+                    )
+                }
+
+                // Highlight for the potential drop cell
+                if (isDropTarget) {
+                    val dropHighlightColor = when {
+                        isValidMoveTarget -> Color.Green
+                        isValidAttackTarget -> Color.Magenta
+                        else -> Color.Red
+                    }
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Blue.copy(alpha = 0.3f))
+                            .background(dropHighlightColor.copy(alpha = 0.5f))
                     )
                 }
 
                 // Draw combatant if present
                 cellCombatant?.let { combatant ->
-                    Box(Modifier.fillMaxSize()) {
+                    // Hide original combatant while dragging
+                    Box(Modifier.fillMaxSize().let { if (isBeingDragged) it.alpha(0f) else it }) {
                         val backgroundAlpha: Float
                         val imageColorFilter: ColorFilter?
 
                         if (combatant.isAlive) {
-                            backgroundAlpha = if (isCurrentCombatant || isAttacked) 0.6f else 0.4f
+                            backgroundAlpha = if (isCurrentCombatant) 0.6f else 0.4f
                             imageColorFilter = null
                         } else {
                             backgroundAlpha = 0.7f // More opaque gray for defeated units
@@ -255,6 +313,32 @@ private fun GridRow(
                             )
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalResourceApi::class)
+@Composable
+private fun DraggedCombatant(
+    draggedCombatant: Combatant?,
+    dragPosition: Offset?,
+    cellSize: Dp
+) {
+    draggedCombatant?.let { combatant ->
+        dragPosition?.let { position ->
+            with(LocalDensity.current) {
+                Box(
+                    modifier = Modifier
+                        .offset(
+                            x = (position.x - cellSize.toPx() / 2).toDp(),
+                            y = (position.y - cellSize.toPx() / 2).toDp()
+                        )
+                        .size(cellSize)
+                        .alpha(0.7f) // Make the dragged item semi-transparent
+                ) {
+                    Image(painterResource(combatant.imageResource), combatant.name)
                 }
             }
         }
