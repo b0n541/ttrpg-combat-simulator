@@ -62,6 +62,7 @@ fun CombatGridView(
     var draggedCombatant by remember { mutableStateOf<Combatant?>(null) }
     var dragPosition by remember { mutableStateOf<Offset?>(null) }
     var dropTarget by remember { mutableStateOf<Position?>(null) }
+    var currentDraggedCombatantAvailableMoves by remember { mutableStateOf<List<Position>>(emptyList()) }
     val cellSize = 100.dp
 
     val combatantsByPosition = remember(combatState.combatants) {
@@ -118,6 +119,7 @@ fun CombatGridView(
                         if (currentCombatant?.position == startPos) {
                             draggedCombatant = currentCombatant
                             dragPosition = startOffset
+                            currentDraggedCombatantAvailableMoves = controller.getAvailableMovePositions(currentCombatant, width, height)
                         }
                     },
                     onDrag = { change, dragAmount ->
@@ -126,6 +128,21 @@ fun CombatGridView(
                         val x = (dragPosition!!.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
                         val y = (dragPosition!!.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
                         dropTarget = Position(x, y)
+                        val potentialDropTarget = Position(x, y)
+
+                        val isOriginalPosition = potentialDropTarget == draggedCombatant!!.position
+                        val isAvailableMove = currentDraggedCombatantAvailableMoves.contains(potentialDropTarget)
+                        val targetCombatantAtPotentialDrop = combatantsByPosition[potentialDropTarget]
+                        val isAvailableAttack = targetCombatantAtPotentialDrop != null &&
+                                targetCombatantAtPotentialDrop.isAlive &&
+                                targetCombatantAtPotentialDrop != draggedCombatant &&
+                                controller.isAttackValid(draggedCombatant!!, targetCombatantAtPotentialDrop)
+
+                        if (isOriginalPosition || isAvailableMove || isAvailableAttack) {
+                            dropTarget = potentialDropTarget
+                        } else {
+                            dropTarget = null
+                        }
                         change.consume()
                     },
                     onDragEnd = {
@@ -150,11 +167,13 @@ fun CombatGridView(
                         draggedCombatant = null
                         dragPosition = null
                         dropTarget = null
+                        currentDraggedCombatantAvailableMoves = emptyList()
                     },
                     onDragCancel = {
                         draggedCombatant = null
                         dragPosition = null
                         dropTarget = null
+                        currentDraggedCombatantAvailableMoves = emptyList()
                     },
                 )
             }
@@ -169,7 +188,8 @@ fun CombatGridView(
                         scope,
                         controller,
                         draggedCombatant,
-                        dropTarget
+                        dropTarget,
+                        currentDraggedCombatantAvailableMoves
                     )
                 }
             }
@@ -207,7 +227,8 @@ private fun GridRow(
     scope: kotlinx.coroutines.CoroutineScope,
     controller: CombatController,
     draggedCombatant: Combatant?,
-    dropTarget: Position?
+    dropTarget: Position?,
+    availableMovePositionsForDragged: List<Position>
 ) {
     Row {
         for (x in 0 until width) {
@@ -217,7 +238,7 @@ private fun GridRow(
 
             val isBeingDragged = draggedCombatant == cellCombatant
             val isDropTarget = dropTarget == pos
-            val isValidMoveTarget = draggedCombatant != null && controller.isMoveValid(draggedCombatant, pos)
+            val isValidMoveTarget = draggedCombatant != null && availableMovePositionsForDragged.contains(pos)
             val isValidAttackTarget = draggedCombatant != null && cellCombatant != null &&
                     cellCombatant.isAlive && cellCombatant != draggedCombatant &&
                     controller.isAttackValid(draggedCombatant, cellCombatant)
