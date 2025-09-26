@@ -1,4 +1,4 @@
-# ⚔️ Table Top Role Player Game Combat Simulator
+# ⚔️ Table Top Role Playing Game Combat Simulator
 
 A combat simulator using 5e SRD mechanics, supporting both SRD 5.1 and SRD 5.2.1 (CC-BY-4.0).
 
