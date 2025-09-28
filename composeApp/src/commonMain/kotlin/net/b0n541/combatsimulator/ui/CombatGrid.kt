@@ -44,7 +44,19 @@ private val floorTiles = listOf(
     Res.drawable.dungeon_floor_13,
     Res.drawable.dungeon_floor_14,
     Res.drawable.dungeon_floor_15,
-    Res.drawable.dungeon_floor_16
+    Res.drawable.dungeon_floor_16,
+    Res.drawable.dungeon_floor_17,
+    Res.drawable.dungeon_floor_18,
+    Res.drawable.dungeon_floor_19,
+    Res.drawable.dungeon_floor_20
+)
+
+private val wallTiles = listOf(
+    Res.drawable.dungeon_wall_01,
+    Res.drawable.dungeon_wall_02,
+    Res.drawable.dungeon_wall_03,
+    Res.drawable.dungeon_wall_04,
+    Res.drawable.dungeon_wall_05
 )
 
 private val characterImages = mapOf(
@@ -132,7 +144,7 @@ fun CombatGridView(
                             draggedCombatant = currentCombatant
                             dragPosition = startOffset
                             currentDraggedCombatantAvailableMoves =
-                                controller.getAvailableMovePositions(currentCombatant, width, height)
+                                controller.getAvailableMovePositions(currentCombatant)
                         }
                     },
                     onDrag = { change, dragAmount ->
@@ -411,6 +423,12 @@ private fun HealthBar(currentHp: Int, maxHp: Int, modifier: Modifier = Modifier)
 
 private fun getFloorTileResource(x: Int, y: Int): DrawableResource {
     val seed = x * 1000 + y // Simple seed from coordinates
-    val tileIndex = Random(seed).nextInt(0, floorTiles.size)
-    return floorTiles[tileIndex]
+
+    if (Level.isFloor(Position(x, y))) {
+        val tileIndex = Random(seed).nextInt(0, floorTiles.size)
+        return floorTiles[tileIndex]
+    } else {
+        val tileIndex = Random(seed).nextInt(0, wallTiles.size)
+        return wallTiles[tileIndex]
+    }
 }

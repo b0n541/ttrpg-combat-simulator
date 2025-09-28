@@ -38,7 +38,7 @@ class CombatController {
 
     suspend fun performAction(action: Action) {
         val current = getCurrentCombatant() ?: return
-        var turnEnded = true
+        val turnEnded = true
         when (action) {
             is Action.Move -> moveCombatant(current, action.newPosition)
             is Action.Attack -> {
@@ -56,10 +56,8 @@ class CombatController {
     }
 
     private fun moveCombatant(combatant: Combatant, newPosition: Position) {
-        // Ensure the target cell is empty
-        val occupied = combatState.value.combatants.any { it.position == newPosition && it.isAlive }
-        val distance = manhattanDistance(combatant.position, newPosition)
-        if (!occupied && distance <= combatant.moveRange) {
+        if (isMoveValid(combatant, newPosition)) {
+            val distance = manhattanDistance(combatant.position, newPosition)
             println("${combatant.name} moves $distance fields to $newPosition")
             combatState.update { state ->
                 state.copy(combatants = state.combatants.map { if (it.name == combatant.name) it.copy(position = newPosition) else it })
@@ -115,14 +113,12 @@ class CombatController {
     private fun manhattanDistance(a: Position, b: Position) =
         kotlin.math.abs(a.x - b.x) + kotlin.math.abs(a.y - b.y)
 
-    fun getAvailableMovePositions(combatant: Combatant, width: Int, height: Int): List<Position> {
+    fun getAvailableMovePositions(combatant: Combatant): List<Position> {
         val positions = mutableListOf<Position>()
-        for (x in 0 until width) {
-            for (y in 0 until height) {
+        for (y in Level.layout.indices) {
+            for (x in Level.layout[y].indices) {
                 val pos = Position(x, y)
-                val distance = manhattanDistance(combatant.position, pos)
-                val occupied = combatState.value.combatants.any { it.position == pos && it.isAlive }
-                if (distance in 1..combatant.moveRange && !occupied) {
+                if (isMoveValid(combatant, pos)) {
                     positions.add(pos)
                 }
             }
@@ -131,6 +127,9 @@ class CombatController {
     }
 
     fun isMoveValid(combatant: Combatant, position: Position): Boolean {
+        if (!Level.isFloor(position)) {
+            return false
+        }
         val distance = manhattanDistance(combatant.position, position)
         val occupied = combatState.value.combatants.any { it.position == position && it.isAlive }
         return distance in 1..combatant.moveRange && !occupied

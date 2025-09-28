@@ -1,5 +1,27 @@
 package net.b0n541.combatsimulator.logic
 
+object Level {
+    val layout = arrayOf(
+        "WWWWWWWWWW",
+        "WFFFFFFFFW",
+        "WFFFFFFFFW",
+        "WFFFFFFFFW",
+        "WFFFWWFFFW",
+        "WFFFFFFFFW",
+        "WFFFFFFFFW",
+        "WFFFWWFFFW",
+        "WFFFFFFFFW",
+        "WWWWWWWWWW"
+    )
+
+    fun isFloor(position: Position): Boolean {
+        if (position.x < 0 || position.x >= layout[0].length || position.y < 0 || position.y >= layout.size) {
+            return false
+        }
+        return layout[position.y][position.x] == 'F'
+    }
+}
+
 data class Position(val x: Int, val y: Int)
 
 enum class CombatantParty {
@@ -65,6 +87,6 @@ data class Combatant(
 
     override fun toString(): String {
         val characterClass = if (party == CombatantParty.PLAYER) characterClass else monsterType
-        return "Combatant(name: $name, class: $characterClass, party: $party, initiative: $initiative, hit points: $currentHp/$maxHp)"
+        return "Combatant(name: $name, class: $characterClass, party: $party, initiative: $initiative, hit points: $currentHp/$maxHp, range: $moveRange)"
     }
 }
