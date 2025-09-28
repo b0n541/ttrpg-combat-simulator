@@ -1,15 +1,13 @@
 package net.b0n541.combatsimulator.logic
 
-import org.jetbrains.compose.resources.DrawableResource
-
 data class Position(val x: Int, val y: Int)
 
-enum class CombatantType {
-    PLAYER, ENEMY
+enum class CombatantParty {
+    PLAYER, MONSTER
 }
 
 enum class CombatOutcome {
-    ONGOING, PLAYER_VICTORY, ENEMY_VICTORY, DRAW
+    ONGOING, PLAYER_VICTORY, MONSTER_VICTORY, DRAW
 }
 
 sealed class Action {
@@ -25,19 +23,48 @@ data class CombatState(
     val lastAttackedTargetId: String? = null
 )
 
+enum class CharacterClass {
+    BARBARIAN, BARD, CLERIC, DRUID, FIGHTER, MONK, PALADIN, RANGER, ROGUE, SORCERER, WARLOCK, WIZARD
+}
+
+enum class MonsterType {
+    GOBLIN, ORC, DRAGON
+}
+
+enum class Ability {
+    STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA;
+}
+
+data class AbilityScore(val score: Int) {
+    /**
+     * Calculates the ability modifier. The formula is (score - 10) / 2, rounded down.
+     * Standard integer division truncates towards zero, which is incorrect for negative results.
+     * For example, a score of 9 gives a modifier of -1. (9 - 10) / 2 = -0.5, which should round down to -1.
+     * Integer division `-1 / 2` results in `0`.
+     */
+    fun modifier(): Int = if (score >= 10) (score - 10) / 2 else (score - 11) / 2
+}
+
 data class Combatant(
     val name: String,
-    val type: CombatantType,
+    val characterClass: CharacterClass? = null,
+    val monsterType: MonsterType? = null,
+    val party: CombatantParty,
     val maxHp: Int,
     val currentHp: Int = 0,
     val initiative: Int = 0,
     val attackPower: Int = 1,
-    val imageResource: DrawableResource,
     val position: Position = Position(0, 0),
-    val moveRange: Int = 3 // maximum squares per turn
+    val moveRange: Int = 3, // maximum squares per turn
+    val abilities: Map<Ability, Int> = emptyMap()
 ) {
     val isAlive: Boolean
         get() = currentHp > 0
 
     fun rollInitiative(): Int = (1..20).random()
+
+    override fun toString(): String {
+        val characterClass = if (party == CombatantParty.PLAYER) characterClass else monsterType
+        return "Combatant(name: $name, class: $characterClass, party: $party, initiative: $initiative, hit points: $currentHp/$maxHp)"
+    }
 }

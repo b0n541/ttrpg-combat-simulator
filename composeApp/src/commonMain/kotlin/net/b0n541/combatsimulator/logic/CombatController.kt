@@ -45,6 +45,7 @@ class CombatController {
                 attack(current, action.target)
                 delay(500) // Wait for attack animation
             }
+
             Action.Dodge -> println("${current.name} dodges") // do nothing
         }
 
@@ -92,14 +93,14 @@ class CombatController {
         combatState.update { state ->
             val alive = state.combatants.filter { it.isAlive }
 
-            val playersAlive = alive.any { it.type == CombatantType.PLAYER }
-            val enemiesAlive = alive.any { it.type == CombatantType.ENEMY }
+            val playersAlive = alive.any { it.party == CombatantParty.PLAYER }
+            val monstersAlive = alive.any { it.party == CombatantParty.MONSTER }
 
             // End combat if no one is alive, or only one faction remains
-            if (!playersAlive || !enemiesAlive) {
+            if (!playersAlive || !monstersAlive) {
                 val newOutcome = when {
-                    !playersAlive && !enemiesAlive -> CombatOutcome.DRAW
-                    !playersAlive -> CombatOutcome.ENEMY_VICTORY
+                    !playersAlive && !monstersAlive -> CombatOutcome.DRAW
+                    !playersAlive -> CombatOutcome.MONSTER_VICTORY
                     else -> CombatOutcome.PLAYER_VICTORY
                 }
                 return@update state.copy(currentTurnId = null, outcome = newOutcome)

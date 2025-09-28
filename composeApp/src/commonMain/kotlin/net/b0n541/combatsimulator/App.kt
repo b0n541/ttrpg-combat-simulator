@@ -9,13 +9,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import net.b0n541.combatsimulator.logic.CombatController
-import net.b0n541.combatsimulator.logic.Combatant
-import net.b0n541.combatsimulator.logic.CombatantType
-import net.b0n541.combatsimulator.logic.Position
+import net.b0n541.combatsimulator.logic.*
 import net.b0n541.combatsimulator.ui.CombatGridView
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import ttrpg_combat_simulator.composeapp.generated.resources.*
 
 private const val GRID_WIDTH = 10
 private const val GRID_HEIGHT = 10
@@ -60,61 +56,67 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
     controller.addCombatant(
         Combatant(
             "Dwarf",
-            CombatantType.PLAYER,
+            CharacterClass.BARBARIAN,
+            null,
+            CombatantParty.PLAYER,
             maxHp = 10,
             attackPower = 3,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions),
-            imageResource = Res.drawable.dwarf
-        )
-    )
-    controller.addCombatant(
-        Combatant(
-            "Orc",
-            CombatantType.ENEMY,
-            maxHp = 8,
-            attackPower = 2,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions),
-            imageResource = Res.drawable.orc
-        )
-    )
-    controller.addCombatant(
-        Combatant(
-            "Goblin",
-            CombatantType.ENEMY,
-            maxHp = 5,
-            attackPower = 1,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions),
-            imageResource = Res.drawable.goblin
+            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
         )
     )
     controller.addCombatant(
         Combatant(
             "Wizard",
-            CombatantType.PLAYER,
+            CharacterClass.WIZARD,
+            null,
+            CombatantParty.PLAYER,
             maxHp = 5,
             attackPower = 1,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions),
-            imageResource = Res.drawable.wizard
+            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
         )
     )
     controller.addCombatant(
         Combatant(
             "Paladin",
-            CombatantType.PLAYER,
+            CharacterClass.PALADIN,
+            null,
+            CombatantParty.PLAYER,
             maxHp = 5,
             attackPower = 1,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions),
-            imageResource = Res.drawable.paladin
+            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
+        )
+    )
+    controller.addCombatant(
+        Combatant(
+            "Orc",
+            null,
+            MonsterType.ORC,
+            CombatantParty.MONSTER,
+            maxHp = 8,
+            attackPower = 2,
+            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
+        )
+    )
+    controller.addCombatant(
+        Combatant(
+            "Goblin",
+            null,
+            MonsterType.GOBLIN,
+            CombatantParty.MONSTER,
+            maxHp = 5,
+            attackPower = 1,
+            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
         )
     )
     controller.addCombatant(
         Combatant(
             "Dragon",
-            CombatantType.ENEMY,
+            null,
+            MonsterType.DRAGON,
+            CombatantParty.MONSTER,
             maxHp = 5,
             attackPower = 1,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions),
-            imageResource = Res.drawable.dragon
+            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
         )
     )
 

@@ -9,19 +9,19 @@ plugins {
 }
 
 kotlin {
-    jvm()
-    
+    jvm { }
+
     js {
         browser()
         binaries.executable()
     }
-    
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
         binaries.executable()
     }
-    
+
     sourceSets {
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -34,7 +34,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
         }
         commonTest.dependencies {
-            implementation(libs.kotlin.test)
+            implementation(kotlin("test"))
+            implementation("ch.tutteli.atrium:atrium-fluent:1.2.0")
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -42,7 +43,6 @@ kotlin {
         }
     }
 }
-
 
 compose.desktop {
     application {

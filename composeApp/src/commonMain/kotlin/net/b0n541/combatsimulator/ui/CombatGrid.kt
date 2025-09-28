@@ -47,6 +47,18 @@ private val floorTiles = listOf(
     Res.drawable.dungeon_floor_16
 )
 
+private val characterImages = mapOf(
+    CharacterClass.BARBARIAN to Res.drawable.dwarf,
+    CharacterClass.PALADIN to Res.drawable.paladin,
+    CharacterClass.WIZARD to Res.drawable.wizard
+)
+
+private val monsterImages = mapOf(
+    MonsterType.GOBLIN to Res.drawable.goblin,
+    MonsterType.ORC to Res.drawable.orc,
+    MonsterType.DRAGON to Res.drawable.dragon
+)
+
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun CombatGridView(
@@ -77,7 +89,7 @@ fun CombatGridView(
         val statusText = when (combatState.outcome) {
             CombatOutcome.ONGOING -> currentCombatant?.let { "Current Turn: ${it.name}" } ?: ""
             CombatOutcome.PLAYER_VICTORY -> "Players have won!"
-            CombatOutcome.ENEMY_VICTORY -> "Enemies have won!"
+            CombatOutcome.MONSTER_VICTORY -> "Monsters have won!"
             CombatOutcome.DRAW -> "The battle is a draw!"
         }
 
@@ -314,9 +326,8 @@ private fun GridRow(
                         }
 
                         val combatantBackgroundColor = if (combatant.isAlive) overlayColor else Color.Gray
-
                         Image(
-                            painter = painterResource(combatant.imageResource),
+                            painter = painterResource(getCharacterImage(combatant)),
                             contentDescription = combatant.name,
                             colorFilter = imageColorFilter,
                             modifier = Modifier
@@ -341,6 +352,13 @@ private fun GridRow(
     }
 }
 
+fun getCharacterImage(combatant: Combatant): DrawableResource {
+    val image = if (combatant.party == CombatantParty.PLAYER)
+        characterImages[combatant.characterClass]
+    else monsterImages[combatant.monsterType]
+    return image!!
+}
+
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun DraggedCombatant(
@@ -359,7 +377,7 @@ private fun DraggedCombatant(
                         )
                         .size(cellSize)
                 ) {
-                    Image(painterResource(combatant.imageResource), combatant.name)
+                    Image(painterResource(getCharacterImage(combatant)), combatant.name)
                 }
             }
         }
