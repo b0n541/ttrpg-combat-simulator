@@ -6,6 +6,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.max
 
 class CombatController {
 
@@ -111,7 +113,7 @@ class CombatController {
     }
 
     private fun chebyshevDistance(a: Position, b: Position) =
-        kotlin.math.max(kotlin.math.abs(a.x - b.x), kotlin.math.abs(a.y - b.y))
+        max(abs(a.x - b.x), abs(a.y - b.y))
 
     private fun findPath(start: Position, end: Position): List<Position>? {
         val openSet = mutableSetOf(start)
@@ -144,12 +146,11 @@ class CombatController {
 
                     val neighbor = Position(current.x + dx, current.y + dy)
 
-                    // Check if neighbor is valid (on floor)
                     if (!Level.isFloor(neighbor)) {
                         continue
                     }
 
-                    val tentativeGScore = gScore.getValue(current) + 1 // All moves have a cost of 1
+                    val tentativeGScore = gScore.getValue(current) + 1
 
                     if (tentativeGScore < gScore.getValue(neighbor)) {
                         cameFrom[neighbor] = current
@@ -168,7 +169,6 @@ class CombatController {
 
     private fun calculateDistance(start: Position, end: Position): Int {
         if (start == end) return 0
-        // The path includes the start node, so distance is size - 1
         return findPath(start, end)?.size?.minus(1) ?: Int.MAX_VALUE
     }
 
@@ -196,6 +196,6 @@ class CombatController {
 
     fun isAttackValid(attacker: Combatant, target: Combatant): Boolean {
         val distance = calculateDistance(attacker.position, target.position)
-        return distance <= attacker.moveRange // Simple range check for now
+        return distance <= attacker.moveRange
     }
 }
