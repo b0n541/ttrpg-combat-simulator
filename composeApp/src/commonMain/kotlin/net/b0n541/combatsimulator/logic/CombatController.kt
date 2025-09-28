@@ -57,7 +57,7 @@ class CombatController {
 
     private fun moveCombatant(combatant: Combatant, newPosition: Position) {
         if (isMoveValid(combatant, newPosition)) {
-            val distance = manhattanDistance(combatant.position, newPosition)
+            val distance = calculateDistance(combatant.position, newPosition)
             println("${combatant.name} moves $distance fields to $newPosition")
             combatState.update { state ->
                 state.copy(combatants = state.combatants.map { if (it.name == combatant.name) it.copy(position = newPosition) else it })
@@ -110,8 +110,67 @@ class CombatController {
         }
     }
 
-    private fun manhattanDistance(a: Position, b: Position) =
-        kotlin.math.abs(a.x - b.x) + kotlin.math.abs(a.y - b.y)
+    private fun chebyshevDistance(a: Position, b: Position) =
+        kotlin.math.max(kotlin.math.abs(a.x - b.x), kotlin.math.abs(a.y - b.y))
+
+    private fun findPath(start: Position, end: Position): List<Position>? {
+        val openSet = mutableSetOf(start)
+        val cameFrom = mutableMapOf<Position, Position>()
+
+        val gScore = mutableMapOf<Position, Int>().withDefault { Int.MAX_VALUE }
+        gScore[start] = 0
+
+        val fScore = mutableMapOf<Position, Int>().withDefault { Int.MAX_VALUE }
+        fScore[start] = chebyshevDistance(start, end)
+
+        while (openSet.isNotEmpty()) {
+            val current = openSet.minByOrNull { fScore.getValue(it) }!!
+
+            if (current == end) {
+                val path = mutableListOf(current)
+                var temp = current
+                while (cameFrom.containsKey(temp)) {
+                    temp = cameFrom.getValue(temp)
+                    path.add(0, temp)
+                }
+                return path
+            }
+
+            openSet.remove(current)
+
+            for (dx in -1..1) {
+                for (dy in -1..1) {
+                    if (dx == 0 && dy == 0) continue
+
+                    val neighbor = Position(current.x + dx, current.y + dy)
+
+                    // Check if neighbor is valid (on floor)
+                    if (!Level.isFloor(neighbor)) {
+                        continue
+                    }
+
+                    val tentativeGScore = gScore.getValue(current) + 1 // All moves have a cost of 1
+
+                    if (tentativeGScore < gScore.getValue(neighbor)) {
+                        cameFrom[neighbor] = current
+                        gScore[neighbor] = tentativeGScore
+                        fScore[neighbor] = tentativeGScore + chebyshevDistance(neighbor, end)
+                        if (neighbor !in openSet) {
+                            openSet.add(neighbor)
+                        }
+                    }
+                }
+            }
+        }
+
+        return null // No path found
+    }
+
+    private fun calculateDistance(start: Position, end: Position): Int {
+        if (start == end) return 0
+        // The path includes the start node, so distance is size - 1
+        return findPath(start, end)?.size?.minus(1) ?: Int.MAX_VALUE
+    }
 
     fun getAvailableMovePositions(combatant: Combatant): List<Position> {
         val positions = mutableListOf<Position>()
@@ -130,13 +189,13 @@ class CombatController {
         if (!Level.isFloor(position)) {
             return false
         }
-        val distance = manhattanDistance(combatant.position, position)
+        val distance = calculateDistance(combatant.position, position)
         val occupied = combatState.value.combatants.any { it.position == position && it.isAlive }
         return distance in 1..combatant.moveRange && !occupied
     }
 
     fun isAttackValid(attacker: Combatant, target: Combatant): Boolean {
-        val distance = manhattanDistance(attacker.position, target.position)
+        val distance = calculateDistance(attacker.position, target.position)
         return distance <= attacker.moveRange // Simple range check for now
     }
 }
