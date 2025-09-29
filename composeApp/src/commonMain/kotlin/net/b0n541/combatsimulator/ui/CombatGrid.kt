@@ -1,5 +1,6 @@
 package net.b0n541.combatsimulator.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,6 +16,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -94,16 +97,11 @@ fun CombatGridView(
     }
 
     Column(
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Turn menu
         val isCombatOngoing = combatState.outcome == CombatOutcome.ONGOING
-        val statusText = when (combatState.outcome) {
-            CombatOutcome.ONGOING -> currentCombatant?.let { "Current Turn: ${it.name}" } ?: ""
-            CombatOutcome.PLAYER_VICTORY -> "Players have won!"
-            CombatOutcome.MONSTER_VICTORY -> "Monsters have won!"
-            CombatOutcome.DRAW -> "The battle is a draw!"
-        }
 
         Spacer(Modifier.height(16.dp))
 
@@ -152,7 +150,6 @@ fun CombatGridView(
                         dragPosition = (dragPosition ?: Offset.Zero) + dragAmount
                         val x = (dragPosition!!.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
                         val y = (dragPosition!!.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
-                        dropTarget = Position(x, y)
                         val potentialDropTarget = Position(x, y)
 
                         val isOriginalPosition = potentialDropTarget == draggedCombatant!!.position
@@ -167,6 +164,12 @@ fun CombatGridView(
                             dropTarget = potentialDropTarget
                         } else {
                             dropTarget = null
+                        }
+
+                        if (isAvailableMove || isAvailableAttack) {
+                            controller.updateMovePath(potentialDropTarget)
+                        } else {
+                            draggedCombatant?.position?.let { controller.updateMovePath(it) }
                         }
                         change.consume()
                     },
@@ -189,12 +192,14 @@ fun CombatGridView(
                                 }
                             }
                         }
+                        draggedCombatant?.position?.let { controller.updateMovePath(it) }
                         draggedCombatant = null
                         dragPosition = null
                         dropTarget = null
                         currentDraggedCombatantAvailableMoves = emptyList()
                     },
                     onDragCancel = {
+                        draggedCombatant?.position?.let { controller.updateMovePath(it) }
                         draggedCombatant = null
                         dragPosition = null
                         dropTarget = null
@@ -219,6 +224,27 @@ fun CombatGridView(
                 }
             }
 
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                if (combatState.movePath.size > 1) {
+                    val path = Path()
+                    val pathPoints = combatState.movePath.map {
+                        Offset(
+                            x = (it.x * cellSize.toPx()) + cellSize.toPx() / 2,
+                            y = (it.y * cellSize.toPx()) + cellSize.toPx() / 2
+                        )
+                    }
+                    path.moveTo(pathPoints.first().x, pathPoints.first().y)
+                    pathPoints.drop(1).forEach {
+                        path.lineTo(it.x, it.y)
+                    }
+                    drawPath(
+                        path = path,
+                        color = Color.Yellow,
+                        style = Stroke(width = 5.dp.toPx())
+                    )
+                }
+            }
+
             DraggedCombatant(
                 draggedCombatant = draggedCombatant,
                 dragPosition = dragPosition,
@@ -226,6 +252,12 @@ fun CombatGridView(
             )
         }
 
+        val statusText = when (combatState.outcome) {
+            CombatOutcome.ONGOING -> currentCombatant?.let { "Current Turn: ${it.name}" } ?: ""
+            CombatOutcome.PLAYER_VICTORY -> "Players have won!"
+            CombatOutcome.MONSTER_VICTORY -> "Monsters have won!"
+            CombatOutcome.DRAW -> "The battle is a draw!"
+        }
 
         Box(
             modifier = Modifier

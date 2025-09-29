@@ -10,7 +10,6 @@ import kotlin.math.abs
 import kotlin.math.max
 
 class CombatController {
-
     private val scope = CoroutineScope(Dispatchers.Default)
     val combatState: MutableStateFlow<CombatState> = MutableStateFlow(CombatState())
 
@@ -38,6 +37,26 @@ class CombatController {
     fun getCurrentCombatant(): Combatant? =
         combatState.value.combatants.firstOrNull { it.name == combatState.value.currentTurnId }
 
+    fun updateMovePath(targetPosition: Position) {
+        val current = getCurrentCombatant() ?: return
+        if (current.position == targetPosition) {
+            combatState.update { it.copy(movePath = emptyList()) }
+            return
+        }
+
+        val path = findPath(current.position, targetPosition)
+
+        val displayPath = path?.let {
+            if (it.size - 1 > current.moveRange) {
+                it.take(current.moveRange + 1)
+            } else {
+                it
+            }
+        } ?: emptyList()
+
+        combatState.update { it.copy(movePath = displayPath) }
+    }
+
     suspend fun performAction(action: Action) {
         val current = getCurrentCombatant() ?: return
         val turnEnded = true
@@ -62,8 +81,13 @@ class CombatController {
             val distance = calculateDistance(combatant.position, newPosition)
             println("${combatant.name} moves $distance fields to $newPosition")
             combatState.update { state ->
-                state.copy(combatants = state.combatants.map { if (it.name == combatant.name) it.copy(position = newPosition) else it })
+                state.copy(
+                    combatants = state.combatants.map { if (it.name == combatant.name) it.copy(position = newPosition) else it },
+                    movePath = emptyList()
+                )
             }
+        } else {
+            combatState.update { it.copy(movePath = emptyList()) }
         }
     }
 
@@ -79,7 +103,8 @@ class CombatController {
                         it.copy(currentHp = (it.currentHp - attacker.attackPower).coerceAtLeast(0))
                     } else it
                 },
-                lastAttackedTargetId = defender.name
+                lastAttackedTargetId = defender.name,
+                movePath = emptyList()
             )
         }
 
@@ -186,12 +211,29 @@ class CombatController {
     }
 
     fun isMoveValid(combatant: Combatant, position: Position): Boolean {
-        if (!Level.isFloor(position)) {
+        if (isFieldOccupied(position)) {
             return false
         }
+
         val distance = calculateDistance(combatant.position, position)
-        val occupied = combatState.value.combatants.any { it.position == position && it.isAlive }
-        return distance in 1..combatant.moveRange && !occupied
+        return distance in 1..combatant.moveRange
+    }
+
+    fun isFieldOccupied(position: Position): Boolean {
+        if (!Level.isFloor(position)) {
+            return true
+        }
+        return combatState.value.combatants.any { it.position == position && it.isAlive }
+    }
+
+    fun getUnusedRandomPosition(): Position {
+        var position: Position
+        do {
+            var x = Level.layout.indices.random()
+            var y = Level.layout[x].indices.random()
+            position = Position(x, y)
+        } while (isFieldOccupied(position))
+        return position
     }
 
     fun isAttackValid(attacker: Combatant, target: Combatant): Boolean {

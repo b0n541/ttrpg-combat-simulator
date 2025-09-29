@@ -3,14 +3,14 @@ package net.b0n541.combatsimulator.logic
 object Level {
     val layout = arrayOf(
         "WWWWWWWWWW",
-        "WFFFFFFFFW",
-        "WFFFFFFFFW",
-        "WFFFFFFFFW",
-        "WFFFWWFFFW",
-        "WFFFFFFFFW",
-        "WFFFFFFFFW",
-        "WFFFWWFFFW",
-        "WFFFFFFFFW",
+        "W........W",
+        "W........W",
+        "W...WW...W",
+        "W........W",
+        "W........W",
+        "W...WW...W",
+        "W........W",
+        "W........W",
         "WWWWWWWWWW"
     )
 
@@ -18,7 +18,7 @@ object Level {
         if (position.x < 0 || position.x >= layout[0].length || position.y < 0 || position.y >= layout.size) {
             return false
         }
-        return layout[position.y][position.x] == 'F'
+        return layout[position.y][position.x] == '.'
     }
 }
 
@@ -42,7 +42,8 @@ data class CombatState(
     val combatants: List<Combatant> = emptyList(),
     val currentTurnId: String? = null,
     val outcome: CombatOutcome = CombatOutcome.ONGOING,
-    val lastAttackedTargetId: String? = null
+    val lastAttackedTargetId: String? = null,
+    val movePath: List<Position> = emptyList()
 )
 
 enum class CharacterClass {
@@ -87,6 +88,6 @@ data class Combatant(
 
     override fun toString(): String {
         val characterClass = if (party == CombatantParty.PLAYER) characterClass else monsterType
-        return "Combatant(name: $name, class: $characterClass, party: $party, initiative: $initiative, hit points: $currentHp/$maxHp, range: $moveRange)"
+        return "Combatant(name: $name, class: $characterClass, party: $party, initiative: $initiative, range: $moveRange, hit points: $currentHp/$maxHp attack: $attackPower)"
     }
 }

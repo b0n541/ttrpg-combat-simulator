@@ -49,7 +49,7 @@ fun App() {
 }
 
 private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeight: Int) {
-    val usedPositions = mutableSetOf<Position>()
+    mutableSetOf<Position>()
 
     controller.resetCombatants()
 
@@ -61,7 +61,7 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             CombatantParty.PLAYER,
             maxHp = 10,
             attackPower = 3,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
+            position = controller.getUnusedRandomPosition()
         )
     )
     controller.addCombatant(
@@ -72,7 +72,7 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             CombatantParty.PLAYER,
             maxHp = 5,
             attackPower = 1,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
+            position = controller.getUnusedRandomPosition()
         )
     )
     controller.addCombatant(
@@ -83,7 +83,7 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             CombatantParty.PLAYER,
             maxHp = 5,
             attackPower = 1,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
+            position = controller.getUnusedRandomPosition()
         )
     )
     controller.addCombatant(
@@ -94,7 +94,7 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             CombatantParty.MONSTER,
             maxHp = 8,
             attackPower = 2,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
+            position = controller.getUnusedRandomPosition()
         )
     )
     controller.addCombatant(
@@ -105,7 +105,7 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             CombatantParty.MONSTER,
             maxHp = 5,
             attackPower = 1,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
+            position = controller.getUnusedRandomPosition()
         )
     )
     controller.addCombatant(
@@ -116,22 +116,9 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             CombatantParty.MONSTER,
             maxHp = 5,
             attackPower = 1,
-            position = getUnusedRandomPosition(gridWidth, gridHeight, usedPositions)
+            position = controller.getUnusedRandomPosition()
         )
     )
 
     controller.startCombat()
-}
-
-private fun getUnusedRandomPosition(
-    gridWidth: Int,
-    gridHeight: Int,
-    usedPositions: MutableSet<Position>
-): Position {
-    var position: Position
-    do {
-        position = Position((0 until gridWidth).random(), (0 until gridHeight).random())
-    } while (position in usedPositions)
-    usedPositions.add(position)
-    return position
 }
