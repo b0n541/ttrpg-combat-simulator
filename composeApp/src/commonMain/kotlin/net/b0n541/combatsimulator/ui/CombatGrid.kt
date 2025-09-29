@@ -103,6 +103,20 @@ fun CombatGridView(
         // Turn menu
         val isCombatOngoing = combatState.outcome == CombatOutcome.ONGOING
 
+        if (isCombatOngoing) {
+            currentCombatant?.let {
+                Text(
+                    text = "Current Turn: ${it.name}",
+                    fontSize = 24.sp
+                )
+            }
+        } else {
+            Text(
+                text = "Game over...hit restart",
+                fontSize = 24.sp
+            )
+        }
+
         Spacer(Modifier.height(16.dp))
 
         Row(
@@ -252,26 +266,28 @@ fun CombatGridView(
                 dragPosition = dragPosition,
                 cellSize = cellSize
             )
-        }
 
-        val statusText = when (combatState.outcome) {
-            CombatOutcome.ONGOING -> currentCombatant?.let { "Current Turn: ${it.name}" } ?: ""
-            CombatOutcome.PLAYER_VICTORY -> "Players have won!"
-            CombatOutcome.MONSTER_VICTORY -> "Monsters have won!"
-            CombatOutcome.DRAW -> "The battle is a draw!"
-        }
-
-        Box(
-            modifier = Modifier
-                .size((width * 100).dp, (height * 100).dp)
-                .background(Color.Black.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = statusText,
-                color = Color.White,
-                fontSize = 50.sp
-            )
+            if (combatState.outcome != CombatOutcome.ONGOING) {
+                val statusText = when (combatState.outcome) {
+                    CombatOutcome.PLAYER_VICTORY -> "Players have won!"
+                    CombatOutcome.MONSTER_VICTORY -> "Monsters have won!"
+                    CombatOutcome.DRAW -> "The battle is a draw!"
+                    else -> ""
+                }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .fillMaxWidth()
+                        .background(Color.Black.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = statusText,
+                        color = Color.White,
+                        fontSize = 50.sp
+                    )
+                }
+            }
         }
     }
 }
@@ -461,8 +477,9 @@ private fun getFloorTileResource(x: Int, y: Int): DrawableResource {
     if (Level.isFloor(Position(x, y))) {
         val tileIndex = Random(seed).nextInt(0, floorTiles.size)
         return floorTiles[tileIndex]
-    } else {
+    } else if (Level.isWall(Position(x, y))) {
         val tileIndex = Random(seed).nextInt(0, wallTiles.size)
         return wallTiles[tileIndex]
     }
+    return floorTiles[0]
 }
