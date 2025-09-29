@@ -105,16 +105,10 @@ fun CombatGridView(
 
         if (isCombatOngoing) {
             currentCombatant?.let {
-                Text(
-                    text = "Current Turn: ${it.name}",
-                    fontSize = 24.sp
-                )
+                Text(text = "Current Turn: ${it.name}")
             }
         } else {
-            Text(
-                text = "Game over...hit restart",
-                fontSize = 24.sp
-            )
+            Text(text = "Game over ... hit restart!")
         }
 
         Spacer(Modifier.height(16.dp))

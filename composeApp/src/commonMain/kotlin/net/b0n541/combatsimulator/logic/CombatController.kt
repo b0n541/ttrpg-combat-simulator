@@ -237,9 +237,6 @@ class CombatController {
     }
 
     fun getUnusedRandomPosition(): Position {
-        println("Known combatants:")
-        printCombatants()
-        println("-----------------")
         var position: Position
         do {
             var x = Level.layout.indices.random()

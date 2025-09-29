@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import net.b0n541.combatsimulator.logic.*
 import net.b0n541.combatsimulator.ui.CombatGridView
+import net.b0n541.combatsimulator.ui.DarkColorScheme
+import net.b0n541.combatsimulator.ui.getTypography
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 private const val GRID_WIDTH = 10
@@ -20,7 +22,7 @@ private const val GRID_HEIGHT = 10
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
+    MaterialTheme(colorScheme = DarkColorScheme, typography = getTypography()) {
         Column(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.primaryContainer)
