@@ -131,82 +131,84 @@ fun CombatGridView(
 
         // Grid
         Box(
-            Modifier.pointerInput(currentCombatant, combatantsByPosition) {
-                detectDragGestures(
-                    onDragStart = { startOffset ->
-                        val x = (startOffset.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
-                        val y = (startOffset.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
-                        val startPos = Position(x, y)
+            modifier = Modifier
+                .width((width * 100).dp)
+                .pointerInput(currentCombatant, combatantsByPosition) {
+                    detectDragGestures(
+                        onDragStart = { startOffset ->
+                            val x = (startOffset.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
+                            val y = (startOffset.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
+                            val startPos = Position(x, y)
 
-                        if (currentCombatant?.position == startPos) {
-                            draggedCombatant = currentCombatant
-                            dragPosition = startOffset
-                            currentDraggedCombatantAvailableMoves =
-                                controller.getAvailableMovePositions(currentCombatant)
-                        }
-                    },
-                    onDrag = { change, dragAmount ->
-                        draggedCombatant ?: return@detectDragGestures
-                        dragPosition = (dragPosition ?: Offset.Zero) + dragAmount
-                        val x = (dragPosition!!.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
-                        val y = (dragPosition!!.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
-                        val potentialDropTarget = Position(x, y)
+                            if (currentCombatant?.position == startPos) {
+                                draggedCombatant = currentCombatant
+                                dragPosition = startOffset
+                                currentDraggedCombatantAvailableMoves =
+                                    controller.getAvailableMovePositions(currentCombatant)
+                            }
+                        },
+                        onDrag = { change, dragAmount ->
+                            draggedCombatant ?: return@detectDragGestures
+                            dragPosition = (dragPosition ?: Offset.Zero) + dragAmount
+                            val x = (dragPosition!!.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
+                            val y = (dragPosition!!.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
+                            val potentialDropTarget = Position(x, y)
 
-                        val isOriginalPosition = potentialDropTarget == draggedCombatant!!.position
-                        val isAvailableMove = currentDraggedCombatantAvailableMoves.contains(potentialDropTarget)
-                        val targetCombatantAtPotentialDrop = combatantsByPosition[potentialDropTarget]
-                        val isAvailableAttack = targetCombatantAtPotentialDrop != null &&
-                                targetCombatantAtPotentialDrop.isAlive &&
-                                targetCombatantAtPotentialDrop != draggedCombatant &&
-                                controller.isAttackValid(draggedCombatant!!, targetCombatantAtPotentialDrop)
+                            val isOriginalPosition = potentialDropTarget == draggedCombatant!!.position
+                            val isAvailableMove = currentDraggedCombatantAvailableMoves.contains(potentialDropTarget)
+                            val targetCombatantAtPotentialDrop = combatantsByPosition[potentialDropTarget]
+                            val isAvailableAttack = targetCombatantAtPotentialDrop != null &&
+                                    targetCombatantAtPotentialDrop.isAlive &&
+                                    targetCombatantAtPotentialDrop != draggedCombatant &&
+                                    controller.isAttackValid(draggedCombatant!!, targetCombatantAtPotentialDrop)
 
-                        if (isOriginalPosition || isAvailableMove || isAvailableAttack) {
-                            dropTarget = potentialDropTarget
-                        } else {
-                            dropTarget = null
-                        }
+                            if (isOriginalPosition || isAvailableMove || isAvailableAttack) {
+                                dropTarget = potentialDropTarget
+                            } else {
+                                dropTarget = null
+                            }
 
-                        if (isAvailableMove || isAvailableAttack) {
-                            controller.updateMovePath(potentialDropTarget)
-                        } else {
-                            draggedCombatant?.position?.let { controller.updateMovePath(it) }
-                        }
-                        change.consume()
-                    },
-                    onDragEnd = {
-                        draggedCombatant?.let { attacker ->
-                            dropTarget?.let { targetPos ->
-                                val targetCombatant = combatantsByPosition[targetPos]
-                                if (targetCombatant != null && targetCombatant.isAlive && targetCombatant != attacker && controller.isAttackValid(
-                                        attacker,
-                                        targetCombatant
-                                    )
-                                ) {
-                                    // Attack logic
-                                    scope.launch {
-                                        controller.performAction(Action.Attack(targetCombatant))
+                            if (isAvailableMove || isAvailableAttack) {
+                                controller.updateMovePath(potentialDropTarget)
+                            } else {
+                                draggedCombatant?.position?.let { controller.updateMovePath(it) }
+                            }
+                            change.consume()
+                        },
+                        onDragEnd = {
+                            draggedCombatant?.let { attacker ->
+                                dropTarget?.let { targetPos ->
+                                    val targetCombatant = combatantsByPosition[targetPos]
+                                    if (targetCombatant != null && targetCombatant.isAlive && targetCombatant != attacker && controller.isAttackValid(
+                                            attacker,
+                                            targetCombatant
+                                        )
+                                    ) {
+                                        // Attack logic
+                                        scope.launch {
+                                            controller.performAction(Action.Attack(targetCombatant))
+                                        }
+                                    } else if (controller.isMoveValid(attacker, targetPos)) {
+                                        // Move logic
+                                        scope.launch { controller.performAction(Action.Move(targetPos)) }
                                     }
-                                } else if (controller.isMoveValid(attacker, targetPos)) {
-                                    // Move logic
-                                    scope.launch { controller.performAction(Action.Move(targetPos)) }
                                 }
                             }
-                        }
-                        draggedCombatant?.position?.let { controller.updateMovePath(it) }
-                        draggedCombatant = null
-                        dragPosition = null
-                        dropTarget = null
-                        currentDraggedCombatantAvailableMoves = emptyList()
-                    },
-                    onDragCancel = {
-                        draggedCombatant?.position?.let { controller.updateMovePath(it) }
-                        draggedCombatant = null
-                        dragPosition = null
-                        dropTarget = null
-                        currentDraggedCombatantAvailableMoves = emptyList()
-                    },
-                )
-            }
+                            draggedCombatant?.position?.let { controller.updateMovePath(it) }
+                            draggedCombatant = null
+                            dragPosition = null
+                            dropTarget = null
+                            currentDraggedCombatantAvailableMoves = emptyList()
+                        },
+                        onDragCancel = {
+                            draggedCombatant?.position?.let { controller.updateMovePath(it) }
+                            draggedCombatant = null
+                            dragPosition = null
+                            dropTarget = null
+                            currentDraggedCombatantAvailableMoves = emptyList()
+                        },
+                    )
+                }
         ) {
             Column {
                 for (y in 0 until height) {

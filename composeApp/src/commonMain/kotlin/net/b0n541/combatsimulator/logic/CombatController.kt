@@ -14,7 +14,11 @@ class CombatController {
     val combatState: MutableStateFlow<CombatState> = MutableStateFlow(CombatState())
 
     fun addCombatant(combatant: Combatant) {
-        combatState.update { it.copy(combatants = it.combatants + combatant) }
+        combatState.update {
+            it.copy(
+                combatants = it.combatants + combatant.copy(position = getUnusedRandomPosition())
+            )
+        }
     }
 
     fun resetCombatants() {
@@ -32,6 +36,8 @@ class CombatController {
                 outcome = CombatOutcome.ONGOING
             )
         }
+
+        printCombatants()
     }
 
     fun getCurrentCombatant(): Combatant? =
@@ -70,10 +76,14 @@ class CombatController {
             Action.Dodge -> println("${current.name} dodges") // do nothing
         }
 
-        combatState.value.combatants.forEach { println(it) }
+        printCombatants()
 
         // Advance turn after any action
         if (turnEnded) nextTurn()
+    }
+
+    private fun printCombatants() {
+        combatState.value.combatants.forEach { println(it) }
     }
 
     private fun moveCombatant(combatant: Combatant, newPosition: Position) {
@@ -227,6 +237,9 @@ class CombatController {
     }
 
     fun getUnusedRandomPosition(): Position {
+        println("Known combatants:")
+        printCombatants()
+        println("-----------------")
         var position: Position
         do {
             var x = Level.layout.indices.random()

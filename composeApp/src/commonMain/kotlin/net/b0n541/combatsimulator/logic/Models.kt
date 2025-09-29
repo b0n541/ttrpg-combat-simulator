@@ -74,7 +74,7 @@ data class Combatant(
     val monsterType: MonsterType? = null,
     val party: CombatantParty,
     val maxHp: Int,
-    val currentHp: Int = 0,
+    val currentHp: Int = maxHp,
     val initiative: Int = 0,
     val attackPower: Int = 1,
     val position: Position = Position(0, 0),
@@ -88,6 +88,6 @@ data class Combatant(
 
     override fun toString(): String {
         val characterClass = if (party == CombatantParty.PLAYER) characterClass else monsterType
-        return "Combatant(name: $name, class: $characterClass, party: $party, initiative: $initiative, range: $moveRange, hit points: $currentHp/$maxHp attack: $attackPower)"
+        return "Combatant(name: $name, class: $characterClass, party: $party, initiative: $initiative, range: $moveRange, hit points: $currentHp/$maxHp attack: $attackPower at: $position)"
     }
 }

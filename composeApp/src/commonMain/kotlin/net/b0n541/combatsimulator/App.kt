@@ -60,8 +60,7 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             null,
             CombatantParty.PLAYER,
             maxHp = 10,
-            attackPower = 3,
-            position = controller.getUnusedRandomPosition()
+            attackPower = 3
         )
     )
     controller.addCombatant(
@@ -71,8 +70,7 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             null,
             CombatantParty.PLAYER,
             maxHp = 5,
-            attackPower = 1,
-            position = controller.getUnusedRandomPosition()
+            attackPower = 1
         )
     )
     controller.addCombatant(
@@ -82,8 +80,7 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             null,
             CombatantParty.PLAYER,
             maxHp = 5,
-            attackPower = 1,
-            position = controller.getUnusedRandomPosition()
+            attackPower = 1
         )
     )
     controller.addCombatant(
@@ -93,8 +90,7 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             MonsterType.ORC,
             CombatantParty.MONSTER,
             maxHp = 8,
-            attackPower = 2,
-            position = controller.getUnusedRandomPosition()
+            attackPower = 2
         )
     )
     controller.addCombatant(
@@ -104,8 +100,7 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             MonsterType.GOBLIN,
             CombatantParty.MONSTER,
             maxHp = 5,
-            attackPower = 1,
-            position = controller.getUnusedRandomPosition()
+            attackPower = 1
         )
     )
     controller.addCombatant(
@@ -115,8 +110,7 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
             MonsterType.DRAGON,
             CombatantParty.MONSTER,
             maxHp = 5,
-            attackPower = 1,
-            position = controller.getUnusedRandomPosition()
+            attackPower = 1
         )
     )
 
