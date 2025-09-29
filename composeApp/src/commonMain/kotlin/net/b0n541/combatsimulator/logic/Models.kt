@@ -2,16 +2,16 @@ package net.b0n541.combatsimulator.logic
 
 object Level {
     val layout = arrayOf(
-        "WWWWWWWWWW",
-        "W........W",
-        "W........W",
-        "W...WW...W",
-        "W........W",
+        "  WWWWWW  ",
+        "WWW....WWW",
         "W........W",
         "W...WW...W",
         "W........W",
         "W........W",
-        "WWWWWWWWWW"
+        "W...WW...W",
+        "W........W",
+        "WWW....WWW",
+        "  WWWWWW  "
     )
 
     fun isFloor(position: Position): Boolean {
@@ -19,6 +19,13 @@ object Level {
             return false
         }
         return layout[position.y][position.x] == '.'
+    }
+
+    fun isWall(position: Position): Boolean {
+        if (position.x < 0 || position.x >= layout[0].length || position.y < 0 || position.y >= layout.size) {
+            return false
+        }
+        return layout[position.y][position.x] == 'W'
     }
 }
 
