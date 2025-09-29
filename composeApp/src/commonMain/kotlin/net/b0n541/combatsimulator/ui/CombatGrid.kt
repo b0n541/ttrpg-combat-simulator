@@ -340,7 +340,7 @@ private fun GridRow(
                 // Highlight for valid move targets during drag
                 if (isValidMoveTarget) {
                     Box(
-                        modifier = Modifier.fillMaxSize().background(Color.Blue.copy(alpha = 0.3f))
+                        modifier = Modifier.fillMaxSize().background(DarkColorScheme.primary.copy(alpha = 0.5f))
                     )
                 }
 
