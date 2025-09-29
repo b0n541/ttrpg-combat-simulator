@@ -24,11 +24,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import net.b0n541.combatsimulator.generated.resources.*
 import net.b0n541.combatsimulator.logic.*
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import ttrpg_combat_simulator.composeapp.generated.resources.*
 import kotlin.random.Random
 
 private val floorTiles = listOf(

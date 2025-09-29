@@ -1,5 +1,4 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -12,15 +11,22 @@ kotlin {
     jvm { }
 
     js {
-        browser()
+//        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useFirefox()
+                }
+            }
+        }
         binaries.executable()
     }
 
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
+//    @OptIn(ExperimentalWasmDsl::class)
+//    wasmJs {
+//        browser()
+//        binaries.executable()
+//    }
 
     sourceSets {
         commonMain.dependencies {
@@ -55,3 +61,9 @@ compose.desktop {
         }
     }
 }
+
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "net.b0n541.combatsimulator.generated.resources"
+}
+
