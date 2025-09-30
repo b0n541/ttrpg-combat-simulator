@@ -4,6 +4,50 @@ A combat simulator using 5e SRD mechanics, supporting both SRD 5.1 and SRD 5.2.1
 
 ![Screenshot showing a game in progress](docs/screenshot.png)
 
+# Getting Started
+
+## Get all tasks
+
+```bash
+./gradlew tasks
+```
+
+## Build all targets
+
+```bash
+./gradlew clean assemble
+```
+
+## Run JVM Target
+
+Import project as Gradle project into your IDE and start from the main class in module `jvmMain`.
+
+## Run JS Development Server
+
+```bash
+./gradlew jsBrowserDevelopmentRun
+```
+
+## Build JS Development Webpack Bundle
+
+```bash
+./gradlew jsBrowserDevelopmentWebpack
+```
+
+## Run WASM Development Server
+
+```bash
+./gradlew wasmJsBrowserDevelopmentRun
+```
+
+## Build WASM Development Webpack Bundle
+
+```bash
+./gradlew wasmJsBrowserDevelopmentWebpack
+```
+
+
+
 ---
 
 ## 📜 Licensing & Legal

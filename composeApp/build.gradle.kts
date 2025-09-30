@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -11,22 +12,15 @@ kotlin {
     jvm { }
 
     js {
-//        browser()
-        browser {
-            testTask {
-                useKarma {
-                    useFirefox()
-                }
-            }
-        }
+        browser()
         binaries.executable()
     }
 
-//    @OptIn(ExperimentalWasmDsl::class)
-//    wasmJs {
-//        browser()
-//        binaries.executable()
-//    }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+        binaries.executable()
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -41,11 +35,13 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
-            implementation("ch.tutteli.atrium:atrium-fluent:1.2.0")
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+        }
+        jvmTest.dependencies {
+            implementation("ch.tutteli.atrium:atrium-fluent:1.2.0")
         }
     }
 }
