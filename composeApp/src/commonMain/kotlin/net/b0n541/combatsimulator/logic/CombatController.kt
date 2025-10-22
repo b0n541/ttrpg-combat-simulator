@@ -65,15 +65,19 @@ class CombatController {
 
     suspend fun performAction(action: Action) {
         val current = getCurrentCombatant() ?: return
-        val turnEnded = true
+        var turnEnded = false
         when (action) {
             is Action.Move -> moveCombatant(current, action.newPosition)
+
             is Action.Attack -> {
                 attack(current, action.target)
                 delay(500) // Wait for attack animation
             }
 
-            Action.Dodge -> println("${current.name} dodges") // do nothing
+            Action.Dodge -> {
+                println("${current.name} dodges")
+                turnEnded = true
+            } // do nothing
         }
 
         printCombatants()
@@ -124,7 +128,7 @@ class CombatController {
         }
     }
 
-    private fun nextTurn() {
+    suspend fun nextTurn() {
         combatState.update { state ->
             val alive = state.combatants.filter { it.isAlive }
 
@@ -222,6 +226,7 @@ class CombatController {
 
     fun isMoveValid(combatant: Combatant, position: Position): Boolean {
         if (isFieldOccupied(position)) {
+            println("Field $position is occupied")
             return false
         }
 

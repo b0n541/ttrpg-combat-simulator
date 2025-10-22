@@ -33,15 +33,19 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
         }
-        commonTest.dependencies {
-            implementation(kotlin("test"))
+
+        val commonTest by getting {
+            dependencies {
+                implementation(libs.kotest.assertions.core)
+
+                // setup for kotlin-test:
+                implementation(kotlin("test"))
+            }
         }
+
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-        }
-        jvmTest.dependencies {
-            implementation("ch.tutteli.atrium:atrium-fluent:1.2.0")
         }
     }
 }
