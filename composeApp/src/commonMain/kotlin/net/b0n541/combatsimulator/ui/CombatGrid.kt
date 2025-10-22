@@ -127,6 +127,37 @@ fun CombatGridView(
                 enabled = isCombatOngoing
             ) { Text("Dodge") }
 
+            Spacer(Modifier.width(16.dp))
+
+            Button(onClick = {
+                if (currentCombatant != null) {
+                    scope.launch {
+                        robot(controller) {
+                            moveForward(2)
+                            turnRight()
+                            moveForward(1)
+//                            if (canMoveForward()) {
+//                                turnLeft()
+//                                moveForward(3)
+//                            }
+                        }
+                    }
+                }
+            }) {
+                Text("Run Program")
+            }
+
+            Spacer(Modifier.width(16.dp))
+
+            Button(
+                onClick = {
+                    scope.launch {
+                        controller.nextTurn()
+                    }
+                },
+                enabled = isCombatOngoing
+            ) { Text("End turn") }
+
             if (!isCombatOngoing) {
                 Spacer(Modifier.weight(1f))
                 Button(onClick = onRestart) {
