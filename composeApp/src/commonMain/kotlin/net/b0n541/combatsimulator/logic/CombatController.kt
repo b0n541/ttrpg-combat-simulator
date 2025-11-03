@@ -251,6 +251,10 @@ class CombatController {
         return position
     }
 
+    fun getOpponentByPosition(position: Position): Combatant? {
+        return combatState.value.combatants.associateBy { it.position }.get(position)
+    }
+
     fun isAttackValid(attacker: Combatant, target: Combatant): Boolean {
         val distance = calculateDistance(attacker.position, target.position)
         return distance <= attacker.moveRange

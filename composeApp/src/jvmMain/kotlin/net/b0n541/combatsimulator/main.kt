@@ -9,7 +9,7 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "TTRPG Combat Simulator",
-        state = rememberWindowState(width = 1200.dp, height = 1200.dp)
+        state = rememberWindowState(width = 1440.dp, height = 1200.dp)
     ) {
         App()
     }

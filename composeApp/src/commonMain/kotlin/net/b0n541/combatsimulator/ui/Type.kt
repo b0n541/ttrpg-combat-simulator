@@ -5,13 +5,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import net.b0n541.combatsimulator.generated.resources.Apostrophic_Labs_Immortal
+import net.b0n541.combatsimulator.generated.resources.JetBrains_Mono_Regular
 import net.b0n541.combatsimulator.generated.resources.Res
-import net.b0n541.combatsimulator.generated.resources.immortal
 import org.jetbrains.compose.resources.Font
 
 @Composable
 fun immortalFontFamily() = FontFamily(
-    Font(Res.font.immortal, FontWeight.Normal, FontStyle.Normal),
+    Font(Res.font.Apostrophic_Labs_Immortal, FontWeight.Normal, FontStyle.Normal),
+)
+
+@Composable
+fun jetbrainsMonoFontFamily() = FontFamily(
+    Font(Res.font.JetBrains_Mono_Regular, FontWeight.Normal, FontStyle.Normal),
 )
 
 @Composable

@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -20,10 +22,12 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import net.b0n541.combatsimulator.executeRobotCode
 import net.b0n541.combatsimulator.generated.resources.*
 import net.b0n541.combatsimulator.logic.*
 import org.jetbrains.compose.resources.DrawableResource
@@ -96,6 +100,24 @@ fun CombatGridView(
         combatState.combatants.associateBy { it.position }
     }
 
+    var code by remember {
+        mutableStateOf(
+            TextFieldState(
+                initialText =
+                    """
+                    robot(game) {
+                        listOf(S, S, S, SE).forEach {
+                            direction -> move(direction)
+                        }
+                        repeat(5) {
+                            attack(SE)   
+                        }
+                    }
+                    """.trimIndent()
+            )
+        )
+    }
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -132,15 +154,7 @@ fun CombatGridView(
             Button(onClick = {
                 if (currentCombatant != null) {
                     scope.launch {
-                        robot(controller) {
-                            moveForward(2)
-                            turnRight()
-                            moveForward(1)
-//                            if (canMoveForward()) {
-//                                turnLeft()
-//                                moveForward(3)
-//                            }
-                        }
+                        executeRobotCode(code.text as String, controller)
                     }
                 }
             }) {
@@ -168,150 +182,170 @@ fun CombatGridView(
 
         Spacer(Modifier.height(16.dp))
 
-        // Grid
-        Box(
-            modifier = Modifier
-                .width((width * 100).dp)
-                .pointerInput(currentCombatant, combatantsByPosition) {
-                    detectDragGestures(
-                        onDragStart = { startOffset ->
-                            val x = (startOffset.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
-                            val y = (startOffset.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
-                            val startPos = Position(x, y)
+        Row(
+            //modifier = Modifier.width((width * 50).dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Grid
+            Box(
+                modifier = Modifier
+                    .width((width * cellSize.value).dp)
+                    .pointerInput(currentCombatant, combatantsByPosition) {
+                        detectDragGestures(
+                            onDragStart = { startOffset ->
+                                val x = (startOffset.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
+                                val y = (startOffset.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
+                                val startPos = Position(x, y)
 
-                            if (currentCombatant?.position == startPos) {
-                                draggedCombatant = currentCombatant
-                                dragPosition = startOffset
-                                currentDraggedCombatantAvailableMoves =
-                                    controller.getAvailableMovePositions(currentCombatant)
-                            }
-                        },
-                        onDrag = { change, dragAmount ->
-                            draggedCombatant ?: return@detectDragGestures
-                            dragPosition = (dragPosition ?: Offset.Zero) + dragAmount
-                            val x = (dragPosition!!.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
-                            val y = (dragPosition!!.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
-                            val potentialDropTarget = Position(x, y)
+                                if (currentCombatant?.position == startPos) {
+                                    draggedCombatant = currentCombatant
+                                    dragPosition = startOffset
+                                    currentDraggedCombatantAvailableMoves =
+                                        controller.getAvailableMovePositions(currentCombatant)
+                                }
+                            },
+                            onDrag = { change, dragAmount ->
+                                draggedCombatant ?: return@detectDragGestures
+                                dragPosition = (dragPosition ?: Offset.Zero) + dragAmount
+                                val x = (dragPosition!!.x / cellSize.toPx()).toInt().coerceIn(0, width - 1)
+                                val y = (dragPosition!!.y / cellSize.toPx()).toInt().coerceIn(0, height - 1)
+                                val potentialDropTarget = Position(x, y)
 
-                            val isOriginalPosition = potentialDropTarget == draggedCombatant!!.position
-                            val isAvailableMove = currentDraggedCombatantAvailableMoves.contains(potentialDropTarget)
-                            val targetCombatantAtPotentialDrop = combatantsByPosition[potentialDropTarget]
-                            val isAvailableAttack = targetCombatantAtPotentialDrop != null &&
-                                    targetCombatantAtPotentialDrop.isAlive &&
-                                    targetCombatantAtPotentialDrop != draggedCombatant &&
-                                    controller.isAttackValid(draggedCombatant!!, targetCombatantAtPotentialDrop)
+                                val isOriginalPosition = potentialDropTarget == draggedCombatant!!.position
+                                val isAvailableMove =
+                                    currentDraggedCombatantAvailableMoves.contains(potentialDropTarget)
+                                val targetCombatantAtPotentialDrop = combatantsByPosition[potentialDropTarget]
+                                val isAvailableAttack = targetCombatantAtPotentialDrop != null &&
+                                        targetCombatantAtPotentialDrop.isAlive &&
+                                        targetCombatantAtPotentialDrop != draggedCombatant &&
+                                        controller.isAttackValid(draggedCombatant!!, targetCombatantAtPotentialDrop)
 
-                            if (isOriginalPosition || isAvailableMove || isAvailableAttack) {
-                                dropTarget = potentialDropTarget
-                            } else {
-                                dropTarget = null
-                            }
+                                if (isOriginalPosition || isAvailableMove || isAvailableAttack) {
+                                    dropTarget = potentialDropTarget
+                                } else {
+                                    dropTarget = null
+                                }
 
-                            if (isAvailableMove || isAvailableAttack) {
-                                controller.updateMovePath(potentialDropTarget)
-                            } else {
-                                draggedCombatant?.position?.let { controller.updateMovePath(it) }
-                            }
-                            change.consume()
-                        },
-                        onDragEnd = {
-                            draggedCombatant?.let { attacker ->
-                                dropTarget?.let { targetPos ->
-                                    val targetCombatant = combatantsByPosition[targetPos]
-                                    if (targetCombatant != null && targetCombatant.isAlive && targetCombatant != attacker && controller.isAttackValid(
-                                            attacker,
-                                            targetCombatant
-                                        )
-                                    ) {
-                                        // Attack logic
-                                        scope.launch {
-                                            controller.performAction(Action.Attack(targetCombatant))
+                                if (isAvailableMove || isAvailableAttack) {
+                                    controller.updateMovePath(potentialDropTarget)
+                                } else {
+                                    draggedCombatant?.position?.let { controller.updateMovePath(it) }
+                                }
+                                change.consume()
+                            },
+                            onDragEnd = {
+                                draggedCombatant?.let { attacker ->
+                                    dropTarget?.let { targetPos ->
+                                        val targetCombatant = combatantsByPosition[targetPos]
+                                        if (targetCombatant != null && targetCombatant.isAlive && targetCombatant != attacker && controller.isAttackValid(
+                                                attacker,
+                                                targetCombatant
+                                            )
+                                        ) {
+                                            // Attack logic
+                                            scope.launch {
+                                                controller.performAction(Action.Attack(targetCombatant))
+                                            }
+                                        } else if (controller.isMoveValid(attacker, targetPos)) {
+                                            // Move logic
+                                            scope.launch { controller.performAction(Action.Move(targetPos)) }
                                         }
-                                    } else if (controller.isMoveValid(attacker, targetPos)) {
-                                        // Move logic
-                                        scope.launch { controller.performAction(Action.Move(targetPos)) }
                                     }
                                 }
-                            }
-                            draggedCombatant?.position?.let { controller.updateMovePath(it) }
-                            draggedCombatant = null
-                            dragPosition = null
-                            dropTarget = null
-                            currentDraggedCombatantAvailableMoves = emptyList()
-                        },
-                        onDragCancel = {
-                            draggedCombatant?.position?.let { controller.updateMovePath(it) }
-                            draggedCombatant = null
-                            dragPosition = null
-                            dropTarget = null
-                            currentDraggedCombatantAvailableMoves = emptyList()
-                        },
-                    )
-                }
-        ) {
-            Column {
-                for (y in 0 until height) {
-                    GridRow(
-                        y,
-                        width,
-                        combatantsByPosition,
-                        currentCombatant,
-                        scope,
-                        controller,
-                        draggedCombatant,
-                        dropTarget,
-                        currentDraggedCombatantAvailableMoves
-                    )
-                }
-            }
-
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                if (combatState.movePath.size > 1) {
-                    val path = Path()
-                    val pathPoints = combatState.movePath.map {
-                        Offset(
-                            x = (it.x * cellSize.toPx()) + cellSize.toPx() / 2,
-                            y = (it.y * cellSize.toPx()) + cellSize.toPx() / 2
+                                draggedCombatant?.position?.let { controller.updateMovePath(it) }
+                                draggedCombatant = null
+                                dragPosition = null
+                                dropTarget = null
+                                currentDraggedCombatantAvailableMoves = emptyList()
+                            },
+                            onDragCancel = {
+                                draggedCombatant?.position?.let { controller.updateMovePath(it) }
+                                draggedCombatant = null
+                                dragPosition = null
+                                dropTarget = null
+                                currentDraggedCombatantAvailableMoves = emptyList()
+                            },
                         )
                     }
-                    path.moveTo(pathPoints.first().x, pathPoints.first().y)
-                    pathPoints.drop(1).forEach {
-                        path.lineTo(it.x, it.y)
+            ) {
+                Column {
+                    for (y in 0 until height) {
+                        GridRow(
+                            y,
+                            width,
+                            combatantsByPosition,
+                            currentCombatant,
+                            scope,
+                            controller,
+                            draggedCombatant,
+                            dropTarget,
+                            currentDraggedCombatantAvailableMoves
+                        )
                     }
-                    drawPath(
-                        path = path,
-                        color = Color.Yellow,
-                        style = Stroke(width = 5.dp.toPx())
-                    )
+                }
+
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    if (combatState.movePath.size > 1) {
+                        val path = Path()
+                        val pathPoints = combatState.movePath.map {
+                            Offset(
+                                x = (it.x * cellSize.toPx()) + cellSize.toPx() / 2,
+                                y = (it.y * cellSize.toPx()) + cellSize.toPx() / 2
+                            )
+                        }
+                        path.moveTo(pathPoints.first().x, pathPoints.first().y)
+                        pathPoints.drop(1).forEach {
+                            path.lineTo(it.x, it.y)
+                        }
+                        drawPath(
+                            path = path,
+                            color = Color.Yellow,
+                            style = Stroke(width = 5.dp.toPx())
+                        )
+                    }
+                }
+
+                DraggedCombatant(
+                    draggedCombatant = draggedCombatant,
+                    dragPosition = dragPosition,
+                    cellSize = cellSize
+                )
+
+                if (combatState.outcome != CombatOutcome.ONGOING) {
+                    val statusText = when (combatState.outcome) {
+                        CombatOutcome.PLAYER_VICTORY -> "Players have won!"
+                        CombatOutcome.MONSTER_VICTORY -> "Monsters have won!"
+                        CombatOutcome.DRAW -> "The battle is a draw!"
+                        else -> ""
+                    }
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .fillMaxWidth()
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = statusText,
+                            color = Color.White,
+                            fontSize = 50.sp
+                        )
+                    }
                 }
             }
 
-            DraggedCombatant(
-                draggedCombatant = draggedCombatant,
-                dragPosition = dragPosition,
-                cellSize = cellSize
-            )
-
-            if (combatState.outcome != CombatOutcome.ONGOING) {
-                val statusText = when (combatState.outcome) {
-                    CombatOutcome.PLAYER_VICTORY -> "Players have won!"
-                    CombatOutcome.MONSTER_VICTORY -> "Monsters have won!"
-                    CombatOutcome.DRAW -> "The battle is a draw!"
-                    else -> ""
-                }
-                Box(
+            Column(Modifier.fillMaxSize().padding(16.dp)) {
+                // Text editor
+                Text("Enter your code:")
+                BasicTextField(
+                    state = code,
+                    textStyle = TextStyle.Default.copy(fontFamily = jetbrainsMonoFontFamily()),
                     modifier = Modifier
-                        .align(Alignment.Center)
                         .fillMaxWidth()
-                        .background(Color.Black.copy(alpha = 0.5f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = statusText,
-                        color = Color.White,
-                        fontSize = 50.sp
-                    )
-                }
+                        .height(500.dp)
+                        .padding(4.dp)
+                        .background(Color.White)
+                )
             }
         }
     }
@@ -508,3 +542,4 @@ private fun getFloorTileResource(x: Int, y: Int): DrawableResource {
     }
     return floorTiles[0]
 }
+
