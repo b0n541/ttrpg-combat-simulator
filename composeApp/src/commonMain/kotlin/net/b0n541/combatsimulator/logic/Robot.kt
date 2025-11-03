@@ -52,6 +52,10 @@ class Robot(private val controller: CombatController) {
         }
     }
 
+    suspend fun nextTurn() {
+        controller.nextTurn()
+    }
+
     private fun directionVector(direction: Direction): Pair<Int, Int> = when (direction) {
         Direction.N -> 0 to -1
         Direction.NE -> 1 to -1
