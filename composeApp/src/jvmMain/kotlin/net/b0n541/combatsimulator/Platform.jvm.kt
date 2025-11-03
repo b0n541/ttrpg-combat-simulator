@@ -2,7 +2,6 @@ package net.b0n541.combatsimulator
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.b0n541.combatsimulator.logic.CombatController
 import net.b0n541.combatsimulator.logic.RobotApi
 import net.b0n541.combatsimulator.logic.robot
 import javax.script.ScriptEngineManager
@@ -13,7 +12,7 @@ class JVMPlatform : Platform {
 
 actual fun getPlatform(): Platform = JVMPlatform()
 
-actual suspend fun executeRobotCode(code: String, game: CombatController) {
+actual suspend fun executeRobotCode(code: String, game: RobotApi) {
     withContext(Dispatchers.Default) {
         val engine = ScriptEngineManager().getEngineByExtension("kts")
 
@@ -21,7 +20,7 @@ actual suspend fun executeRobotCode(code: String, game: CombatController) {
         println(code)
 
         // Make the DSL context available in the script
-        engine.put("game", game as RobotApi)
+        engine.put("game", game)
         engine.put("robot", ::robot)
         engine.put("scope", this)
 

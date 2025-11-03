@@ -68,7 +68,8 @@ class Robot(private val controller: CombatController) {
     }
 }
 
-suspend fun robot(controller: CombatController, block: suspend Robot.() -> Unit) {
-    val r = Robot(controller)
-    r.block()
+suspend fun robot(game: RobotApi, block: suspend Robot.() -> Unit) {
+    val controller = game as CombatController
+    val robot = Robot(controller)
+    robot.block()
 }
