@@ -112,6 +112,7 @@ fun CombatGridView(
                         repeat(5) {
                             attack(SE)   
                         }
+                        nextTurn()
                     }
                     """.trimIndent()
             )

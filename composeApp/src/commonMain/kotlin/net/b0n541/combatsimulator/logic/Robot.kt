@@ -52,7 +52,7 @@ class Robot(private val controller: CombatController) {
         }
     }
 
-    suspend fun nextTurn() {
+    fun nextTurn() {
         controller.nextTurn()
     }
 

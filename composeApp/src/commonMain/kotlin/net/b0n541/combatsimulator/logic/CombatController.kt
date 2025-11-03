@@ -9,11 +9,18 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
 
-class CombatController {
+/**
+ * Defines the limited API of the game controller that is exposed to the Robot script.
+ */
+interface RobotApi {
+    // TODO add suitable methods here that should be used by the Robot directly
+}
+
+class CombatController : RobotApi {
     private val scope = CoroutineScope(Dispatchers.Default)
     val combatState: MutableStateFlow<CombatState> = MutableStateFlow(CombatState())
 
-    fun addCombatant(combatant: Combatant) {
+    internal fun addCombatant(combatant: Combatant) {
         combatState.update {
             it.copy(
                 combatants = it.combatants + combatant.copy(position = getUnusedRandomPosition())
@@ -21,11 +28,11 @@ class CombatController {
         }
     }
 
-    fun resetCombatants() {
+    internal fun resetCombatants() {
         combatState.update { it.copy(combatants = emptyList()) }
     }
 
-    fun startCombat() {
+    internal fun startCombat() {
         combatState.update { state ->
             val startedCombatants = state.combatants
                 .map { it.copy(currentHp = it.maxHp, initiative = it.rollInitiative()) }
@@ -40,10 +47,10 @@ class CombatController {
         printCombatants()
     }
 
-    fun getCurrentCombatant(): Combatant? =
+    internal fun getCurrentCombatant(): Combatant? =
         combatState.value.combatants.firstOrNull { it.name == combatState.value.currentTurnId }
 
-    fun updateMovePath(targetPosition: Position) {
+    internal fun updateMovePath(targetPosition: Position) {
         val current = getCurrentCombatant() ?: return
         if (current.position == targetPosition) {
             combatState.update { it.copy(movePath = emptyList()) }
@@ -63,7 +70,7 @@ class CombatController {
         combatState.update { it.copy(movePath = displayPath) }
     }
 
-    suspend fun performAction(action: Action) {
+    internal suspend fun performAction(action: Action) {
         val current = getCurrentCombatant() ?: return
         var turnEnded = false
         when (action) {
@@ -128,7 +135,7 @@ class CombatController {
         }
     }
 
-    suspend fun nextTurn() {
+    internal fun nextTurn() {
         combatState.update { state ->
             val alive = state.combatants.filter { it.isAlive }
 
@@ -211,7 +218,7 @@ class CombatController {
         return findPath(start, end)?.size?.minus(1) ?: Int.MAX_VALUE
     }
 
-    fun getAvailableMovePositions(combatant: Combatant): List<Position> {
+    internal fun getAvailableMovePositions(combatant: Combatant): List<Position> {
         val positions = mutableListOf<Position>()
         for (y in Level.layout.indices) {
             for (x in Level.layout[y].indices) {
@@ -224,7 +231,7 @@ class CombatController {
         return positions
     }
 
-    fun isMoveValid(combatant: Combatant, position: Position): Boolean {
+    internal fun isMoveValid(combatant: Combatant, position: Position): Boolean {
         if (isFieldOccupied(position)) {
             println("Field $position is occupied")
             return false
@@ -234,14 +241,14 @@ class CombatController {
         return distance in 1..combatant.moveRange
     }
 
-    fun isFieldOccupied(position: Position): Boolean {
+    internal fun isFieldOccupied(position: Position): Boolean {
         if (!Level.isFloor(position)) {
             return true
         }
         return combatState.value.combatants.any { it.position == position && it.isAlive }
     }
 
-    fun getUnusedRandomPosition(): Position {
+    internal fun getUnusedRandomPosition(): Position {
         var position: Position
         do {
             var x = Level.layout.indices.random()
@@ -251,11 +258,11 @@ class CombatController {
         return position
     }
 
-    fun getOpponentByPosition(position: Position): Combatant? {
+    internal fun getOpponentByPosition(position: Position): Combatant? {
         return combatState.value.combatants.associateBy { it.position }.get(position)
     }
 
-    fun isAttackValid(attacker: Combatant, target: Combatant): Boolean {
+    internal fun isAttackValid(attacker: Combatant, target: Combatant): Boolean {
         val distance = calculateDistance(attacker.position, target.position)
         return distance <= attacker.moveRange
     }

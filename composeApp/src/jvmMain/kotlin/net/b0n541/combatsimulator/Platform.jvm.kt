@@ -3,6 +3,7 @@ package net.b0n541.combatsimulator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.b0n541.combatsimulator.logic.CombatController
+import net.b0n541.combatsimulator.logic.RobotApi
 import net.b0n541.combatsimulator.logic.robot
 import javax.script.ScriptEngineManager
 
@@ -20,13 +21,13 @@ actual suspend fun executeRobotCode(code: String, game: CombatController) {
         println(code)
 
         // Make the DSL context available in the script
-        engine.put("game", game)
+        engine.put("game", game as RobotApi)
         engine.put("robot", ::robot)
         engine.put("scope", this)
 
         val fullCode = """
              import net.b0n541.combatsimulator.logic.robot
-             import net.b0n541.combatsimulator.logic.CombatController
+             import net.b0n541.combatsimulator.logic.RobotApi
              import net.b0n541.combatsimulator.logic.Robot
              import net.b0n541.combatsimulator.logic.Direction.*
              import kotlinx.coroutines.CoroutineScope
