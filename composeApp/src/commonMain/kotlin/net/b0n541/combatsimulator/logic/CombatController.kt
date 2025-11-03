@@ -116,7 +116,7 @@ class CombatController {
                     if (it.name == defender.name) {
                         it.copy(currentHp = (it.currentHp - attacker.attackPower).coerceAtLeast(0))
                     } else it
-                },
+                }.sortedBy { it.isAlive },
                 lastAttackedTargetId = defender.name,
                 movePath = emptyList()
             )
