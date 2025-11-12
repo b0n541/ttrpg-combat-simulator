@@ -154,21 +154,6 @@ fun CombatGridView(
 
             Button(
                 onClick = {
-                    if (currentCombatant != null) {
-                        scope.launch {
-                            executeRobotCode(code.text as String, controller)
-                        }
-                    }
-                },
-                enabled = isCombatOngoing
-            ) {
-                Text("Run Program")
-            }
-
-            Spacer(Modifier.width(16.dp))
-
-            Button(
-                onClick = {
                     scope.launch {
                         controller.nextTurn()
                     }
@@ -350,6 +335,18 @@ fun CombatGridView(
                         .padding(4.dp)
                         .background(Color.White)
                 )
+                Button(
+                    onClick = {
+                        if (currentCombatant != null) {
+                            scope.launch {
+                                executeRobotCode(code.text as String, controller)
+                            }
+                        }
+                    },
+                    enabled = isCombatOngoing
+                ) {
+                    Text("Run Program")
+                }
             }
         }
     }
