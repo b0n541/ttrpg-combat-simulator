@@ -169,7 +169,7 @@ class CombatController : RobotApi {
         gScore[start] = 0
 
         val fScore = mutableMapOf<Position, Int>().withDefault { Int.MAX_VALUE }
-        fScore[start] = chebyshevDistance(start, end)
+        fScore[start] = chebyshevDistance(start, end) * 10
 
         while (openSet.isNotEmpty()) {
             val current = openSet.minByOrNull { fScore.getValue(it) }!!
@@ -196,12 +196,13 @@ class CombatController : RobotApi {
                         continue
                     }
 
-                    val tentativeGScore = gScore.getValue(current) + 1
+                    val moveCost = if (dx != 0 && dy != 0) 14 else 10
+                    val tentativeGScore = gScore.getValue(current) + moveCost
 
                     if (tentativeGScore < gScore.getValue(neighbor)) {
                         cameFrom[neighbor] = current
                         gScore[neighbor] = tentativeGScore
-                        fScore[neighbor] = tentativeGScore + chebyshevDistance(neighbor, end)
+                        fScore[neighbor] = tentativeGScore + chebyshevDistance(neighbor, end) * 10
                         if (neighbor !in openSet) {
                             openSet.add(neighbor)
                         }
