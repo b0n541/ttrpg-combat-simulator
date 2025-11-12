@@ -75,7 +75,8 @@ private val characterImages = mapOf(
 private val monsterImages = mapOf(
     MonsterType.GOBLIN to Res.drawable.goblin,
     MonsterType.ORC to Res.drawable.orc,
-    MonsterType.DRAGON to Res.drawable.dragon
+    MonsterType.DRAGON to Res.drawable.dragon,
+    MonsterType.ZOMBIE to Res.drawable.zombie
 )
 
 @OptIn(ExperimentalResourceApi::class)

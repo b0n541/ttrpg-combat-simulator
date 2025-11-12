@@ -62,7 +62,7 @@ enum class CharacterSpecies {
 }
 
 enum class MonsterType {
-    GOBLIN, ORC, DRAGON
+    DRAGON, GOBLIN, ORC, ZOMBIE
 }
 
 data class Combatant(
@@ -71,18 +71,17 @@ data class Combatant(
     val characterSpecies: CharacterSpecies? = null,
     val monsterType: MonsterType? = null,
     val party: CombatantParty,
-    val maxHp: Int,
+    val maxHp: Int = 0,
     val currentHp: Int = maxHp,
     val initiative: Int = 0,
     val attackPower: Int = 1,
     val position: Position = Position(0, 0),
     val moveRange: Int = 3, // maximum squares per turn
-    val abilities: Map<Ability, Int> = emptyMap()
+    val statBlock: StatBlock? = null
 ) {
-    val isAlive: Boolean
-        get() = currentHp > 0
+    val isAlive = currentHp > 0
 
-    fun rollInitiative(): Int = (1..20).random()
+    fun rollInitiative() = (1..20).random()
 
     override fun toString(): String {
         val characterClass = if (party == CombatantParty.PLAYER) characterClass else monsterType
@@ -126,7 +125,22 @@ object MonsterParty {
             "Dragon", null, null, MonsterType.DRAGON,
             CombatantParty.MONSTER,
             maxHp = 5, attackPower = 1
+        ),
+        "Zombie 1" to Combatant(
+            "Zombie 1", null, null, MonsterType.ZOMBIE,
+            CombatantParty.MONSTER,
+            maxHp = 5, attackPower = 1,
+            statBlock = StatBlock(
+                8, 15, 20, -2,
+                listOf(
+                    AbilityScore(Ability.STRENGTH, 13),
+                    AbilityScore(Ability.DEXTERITY, 6),
+                    AbilityScore(Ability.CONSTITUTION, 16),
+                    AbilityScore(Ability.INTELLIGENCE, 3),
+                    AbilityScore(Ability.WISDOM, 6, 0),
+                    AbilityScore(Ability.CHARISMA, 5),
+                )
+            )
         )
     )
 }
-
