@@ -2,6 +2,9 @@
 
 A combat simulator using 5e SRD mechanics, supporting both SRD 5.1 and SRD 5.2.1 (CC-BY-4.0).
 
+Secondly this will become a coding learning tool in which you can program the moves of your adventurer with Kotlin
+script.
+
 ![Screenshot showing a game in progress](docs/screenshot.png)
 
 # Getting Started
@@ -20,7 +23,11 @@ A combat simulator using 5e SRD mechanics, supporting both SRD 5.1 and SRD 5.2.1
 
 ## Run JVM Target
 
-Import project as Gradle project into your IDE and start from the main class in module `jvmMain`.
+Import project as Gradle project into your IDE and start from the main class in module `jvmMain` or
+
+```bash
+./gradlew hotRunJvm
+```
 
 ## Run JS Development Server
 
@@ -45,8 +52,6 @@ Import project as Gradle project into your IDE and start from the main class in 
 ```bash
 ./gradlew wasmJsBrowserDevelopmentWebpack
 ```
-
-
 
 ---
 
