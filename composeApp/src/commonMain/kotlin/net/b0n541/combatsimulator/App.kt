@@ -9,7 +9,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import net.b0n541.combatsimulator.logic.*
+import net.b0n541.combatsimulator.logic.CombatController
+import net.b0n541.combatsimulator.logic.MonsterParty
+import net.b0n541.combatsimulator.logic.PlayerParty
+import net.b0n541.combatsimulator.logic.Position
 import net.b0n541.combatsimulator.ui.CombatGridView
 import net.b0n541.combatsimulator.ui.DarkColorScheme
 import net.b0n541.combatsimulator.ui.getTypography
@@ -55,66 +58,8 @@ private fun startNewGame(controller: CombatController, gridWidth: Int, gridHeigh
 
     controller.resetCombatants()
 
-    controller.addCombatant(
-        Combatant(
-            "Dwarf",
-            CharacterClass.BARBARIAN,
-            null,
-            CombatantParty.PLAYER,
-            maxHp = 10,
-            attackPower = 3
-        )
-    )
-    controller.addCombatant(
-        Combatant(
-            "Wizard",
-            CharacterClass.WIZARD,
-            null,
-            CombatantParty.PLAYER,
-            maxHp = 5,
-            attackPower = 1
-        )
-    )
-    controller.addCombatant(
-        Combatant(
-            "Paladin",
-            CharacterClass.PALADIN,
-            null,
-            CombatantParty.PLAYER,
-            maxHp = 5,
-            attackPower = 1
-        )
-    )
-    controller.addCombatant(
-        Combatant(
-            "Orc",
-            null,
-            MonsterType.ORC,
-            CombatantParty.MONSTER,
-            maxHp = 8,
-            attackPower = 2
-        )
-    )
-    controller.addCombatant(
-        Combatant(
-            "Goblin",
-            null,
-            MonsterType.GOBLIN,
-            CombatantParty.MONSTER,
-            maxHp = 5,
-            attackPower = 1
-        )
-    )
-    controller.addCombatant(
-        Combatant(
-            "Dragon",
-            null,
-            MonsterType.DRAGON,
-            CombatantParty.MONSTER,
-            maxHp = 5,
-            attackPower = 1
-        )
-    )
+    PlayerParty.creatures.forEach { player -> controller.addCombatant(player.value) }
+    MonsterParty.monsters.forEach { monster -> controller.addCombatant(monster.value) }
 
     controller.startCombat()
 }

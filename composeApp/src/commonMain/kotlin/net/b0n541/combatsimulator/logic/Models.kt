@@ -57,6 +57,10 @@ enum class CharacterClass {
     BARBARIAN, BARD, CLERIC, DRUID, FIGHTER, MONK, PALADIN, RANGER, ROGUE, SORCERER, WARLOCK, WIZARD
 }
 
+enum class CharacterSpecies {
+    DRAGONBORN, DWARF, ELF, GNOME, GOLIATH, HALFLING, HUMAN, ORC, TIEFLING
+}
+
 enum class MonsterType {
     GOBLIN, ORC, DRAGON
 }
@@ -64,6 +68,7 @@ enum class MonsterType {
 data class Combatant(
     val name: String,
     val characterClass: CharacterClass? = null,
+    val characterSpecies: CharacterSpecies? = null,
     val monsterType: MonsterType? = null,
     val party: CombatantParty,
     val maxHp: Int,
@@ -84,3 +89,44 @@ data class Combatant(
         return "Combatant(name: $name, class: $characterClass, party: $party, initiative: $initiative, range: $moveRange, hit points: $currentHp/$maxHp attack: $attackPower at: $position)"
     }
 }
+
+object PlayerParty {
+    val creatures = mapOf(
+        "Dwarf 1" to Combatant(
+            "Dwarf 1", CharacterClass.BARBARIAN, CharacterSpecies.DWARF, null,
+            CombatantParty.PLAYER,
+            maxHp = 10, attackPower = 3
+        ),
+        "Wizard 1" to Combatant(
+            "Wizard 1", CharacterClass.WIZARD, CharacterSpecies.ELF, null,
+            CombatantParty.PLAYER,
+            maxHp = 5, attackPower = 1
+        ),
+        "Paladin 1" to Combatant(
+            "Paladin 1", CharacterClass.PALADIN, CharacterSpecies.HUMAN, null,
+            CombatantParty.PLAYER,
+            maxHp = 5, attackPower = 1
+        )
+    )
+}
+
+object MonsterParty {
+    val monsters = mapOf(
+        "Orc1" to Combatant(
+            "Orc", null, null, MonsterType.ORC,
+            CombatantParty.MONSTER,
+            maxHp = 8, attackPower = 2
+        ),
+        "Goblin 1" to Combatant(
+            "Goblin", null, null, MonsterType.GOBLIN,
+            CombatantParty.MONSTER,
+            maxHp = 5, attackPower = 1
+        ),
+        "Dragon 1" to Combatant(
+            "Dragon", null, null, MonsterType.DRAGON,
+            CombatantParty.MONSTER,
+            maxHp = 5, attackPower = 1
+        )
+    )
+}
+
