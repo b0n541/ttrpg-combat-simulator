@@ -94,17 +94,50 @@ object PlayerParty {
         "Dwarf 1" to Combatant(
             "Dwarf 1", CharacterClass.BARBARIAN, CharacterSpecies.DWARF, null,
             CombatantParty.PLAYER,
-            maxHp = 10, attackPower = 3
+            maxHp = 10, attackPower = 3,
+            statBlock = StatBlock(
+                18, 11, 25, -1,
+                listOf(
+                    AbilityScore(Ability.STRENGTH, 14),
+                    AbilityScore(Ability.DEXTERITY, 8),
+                    AbilityScore(Ability.CONSTITUTION, 15),
+                    AbilityScore(Ability.INTELLIGENCE, 10),
+                    AbilityScore(Ability.WISDOM, 16),
+                    AbilityScore(Ability.CHARISMA, 12)
+                )
+            )
         ),
         "Wizard 1" to Combatant(
             "Wizard 1", CharacterClass.WIZARD, CharacterSpecies.ELF, null,
             CombatantParty.PLAYER,
-            maxHp = 5, attackPower = 1
+            maxHp = 5, attackPower = 1,
+            statBlock = StatBlock(
+                12, 8, 30, 2,
+                listOf(
+                    AbilityScore(Ability.STRENGTH, 10),
+                    AbilityScore(Ability.DEXTERITY, 14),
+                    AbilityScore(Ability.CONSTITUTION, 15),
+                    AbilityScore(Ability.INTELLIGENCE, 16),
+                    AbilityScore(Ability.WISDOM, 12),
+                    AbilityScore(Ability.CHARISMA, 8)
+                )
+            )
         ),
         "Paladin 1" to Combatant(
             "Paladin 1", CharacterClass.PALADIN, CharacterSpecies.HUMAN, null,
             CombatantParty.PLAYER,
-            maxHp = 5, attackPower = 1
+            maxHp = 5, attackPower = 1,
+            statBlock = StatBlock(
+                18, 12, 30, -1,
+                listOf(
+                    AbilityScore(Ability.STRENGTH, 16),
+                    AbilityScore(Ability.DEXTERITY, 9),
+                    AbilityScore(Ability.CONSTITUTION, 15),
+                    AbilityScore(Ability.INTELLIGENCE, 11),
+                    AbilityScore(Ability.WISDOM, 13),
+                    AbilityScore(Ability.CHARISMA, 14)
+                )
+            )
         )
     )
 }
@@ -112,7 +145,7 @@ object PlayerParty {
 object MonsterParty {
     val monsters = mapOf(
         "Ankheg 1" to Combatant(
-            "Ankheg", null, null, MonsterType.ANKHEG,
+            "Ankheg 1", null, null, MonsterType.ANKHEG,
             CombatantParty.MONSTER,
             maxHp = 8, attackPower = 2,
             statBlock = StatBlock(
@@ -128,7 +161,7 @@ object MonsterParty {
             )
         ),
         "Goblin 1" to Combatant(
-            "Goblin", null, null, MonsterType.GOBLIN,
+            "Goblin 1", null, null, MonsterType.GOBLIN,
             CombatantParty.MONSTER,
             maxHp = 5, attackPower = 1,
             statBlock = StatBlock(
@@ -144,7 +177,7 @@ object MonsterParty {
             )
         ),
         "Dragon 1" to Combatant(
-            "Dragon", null, null, MonsterType.DRAGON,
+            "Dragon 1", null, null, MonsterType.DRAGON,
             CombatantParty.MONSTER,
             maxHp = 5, attackPower = 1,
             statBlock = StatBlock(
