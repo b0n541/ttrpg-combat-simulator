@@ -62,7 +62,7 @@ enum class CharacterSpecies {
 }
 
 enum class MonsterType {
-    DRAGON, GOBLIN, ORC, ZOMBIE
+    DRAGON, GOBLIN, ANKHEG, ZOMBIE
 }
 
 data class Combatant(
@@ -111,20 +111,53 @@ object PlayerParty {
 
 object MonsterParty {
     val monsters = mapOf(
-        "Orc1" to Combatant(
-            "Orc", null, null, MonsterType.ORC,
+        "Ankheg 1" to Combatant(
+            "Ankheg", null, null, MonsterType.ANKHEG,
             CombatantParty.MONSTER,
-            maxHp = 8, attackPower = 2
+            maxHp = 8, attackPower = 2,
+            statBlock = StatBlock(
+                14, 45, 30, 0,
+                listOf(
+                    AbilityScore(Ability.STRENGTH, 17),
+                    AbilityScore(Ability.DEXTERITY, 11),
+                    AbilityScore(Ability.CONSTITUTION, 14),
+                    AbilityScore(Ability.INTELLIGENCE, 1),
+                    AbilityScore(Ability.WISDOM, 13),
+                    AbilityScore(Ability.CHARISMA, 6)
+                )
+            )
         ),
         "Goblin 1" to Combatant(
             "Goblin", null, null, MonsterType.GOBLIN,
             CombatantParty.MONSTER,
-            maxHp = 5, attackPower = 1
+            maxHp = 5, attackPower = 1,
+            statBlock = StatBlock(
+                15, 10, 30, 2,
+                listOf(
+                    AbilityScore(Ability.STRENGTH, 8),
+                    AbilityScore(Ability.DEXTERITY, 15),
+                    AbilityScore(Ability.CONSTITUTION, 10),
+                    AbilityScore(Ability.INTELLIGENCE, 10),
+                    AbilityScore(Ability.WISDOM, 8),
+                    AbilityScore(Ability.CHARISMA, 8)
+                )
+            )
         ),
         "Dragon 1" to Combatant(
             "Dragon", null, null, MonsterType.DRAGON,
             CombatantParty.MONSTER,
-            maxHp = 5, attackPower = 1
+            maxHp = 5, attackPower = 1,
+            statBlock = StatBlock(
+                19, 256, 40, +12,
+                listOf(
+                    AbilityScore(Ability.STRENGTH, 27),
+                    AbilityScore(Ability.DEXTERITY, 10, 6),
+                    AbilityScore(Ability.CONSTITUTION, 25),
+                    AbilityScore(Ability.INTELLIGENCE, 16),
+                    AbilityScore(Ability.WISDOM, 13, 7),
+                    AbilityScore(Ability.CHARISMA, 23)
+                )
+            )
         ),
         "Zombie 1" to Combatant(
             "Zombie 1", null, null, MonsterType.ZOMBIE,
