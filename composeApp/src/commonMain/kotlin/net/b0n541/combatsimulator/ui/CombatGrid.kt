@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Button
@@ -14,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -455,7 +457,9 @@ private fun GridRow(
                             colorFilter = imageColorFilter,
                             modifier = Modifier
                                 .fillMaxSize()
+                                .clip(CircleShape)
                                 .background(combatantBackgroundColor.copy(alpha = backgroundAlpha))
+                                .border(5.dp, DarkColorScheme.primaryContainer, CircleShape)
                                 .padding(4.dp)
                         )
 
@@ -500,7 +504,14 @@ private fun DraggedCombatant(
                         )
                         .size(cellSize)
                 ) {
-                    Image(painterResource(getCharacterImage(combatant)), combatant.name)
+                    Image(
+                        painter = painterResource(getCharacterImage(combatant)),
+                        contentDescription = combatant.name,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .border(5.dp, DarkColorScheme.primaryContainer, CircleShape)
+                    )
                 }
             }
         }
@@ -544,4 +555,3 @@ private fun getFloorTileResource(x: Int, y: Int): DrawableResource {
     }
     return floorTiles[0]
 }
-
